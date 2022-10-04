@@ -1,5 +1,5 @@
-# FishySteamworks
-A Steamworks implementation for Fish-Networking.
+# FishyEOS
+An Epic Online Services implementation for Fish-Networking.
 
 Thank you [ETdoFresh](https://github.com/sponsors/etdofresh) for your support.
 
