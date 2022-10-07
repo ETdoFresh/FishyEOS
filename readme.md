@@ -46,8 +46,8 @@ You are not required to use git to download the package. Alternatively, you can 
 4. Start Client as normal.  
    `NetworkManager.ClientManager.StartConnection()`
 
-### Host
-1. Follow steps from Server.
+### As a Host
+1. Follow steps from [As a Server](#as-a-server).
 2. Start Client as normal.  
    `NetworkManager.ClientManager.StartConnection()`  
    (A special "clientHost" will be created on server allowing to play as a client on the server)
