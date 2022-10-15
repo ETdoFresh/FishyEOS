@@ -1,5 +1,6 @@
 # Still under development! Currently in Pre-Production. But available if you want to try it out.
-If there are issues you want to report, let me know either here in [Issues](https://github.com/ETdoFresh/FishyEOS/issues). Or ask me [ETdoFresh] in [FirstGearGames Discord](https://discord.gg/Ta9HgDh4Hj).
+If there are issues you want to report, let me know either here in [Issues](https://github.com/ETdoFresh/FishyEOS/issues).  
+Or ask me [ETdoFresh] in [FirstGearGames Discord](https://discord.gg/Ta9HgDh4Hj).
 
 # FishyEOS
 An Epic Online Services (EOS) implementation for Fish-Networking.
