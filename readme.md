@@ -21,7 +21,7 @@ These projects need to be installed and working before you can use this transpor
 
 1. Open Unity Package Manager. **Unity > Window > Package Manager**
 2. Add a package from git URL. **Package Manager > + > Add package from git URL...**
-3. Enter this url: `https://github.com/ETdoFresh/FishyEOS.git`
+3. Enter this url: `https://github.com/ETdoFresh/FishyEOS.git?path=/FishNet/Plugins/FishyEOS`
 
 ### As a local Unity Package
 
