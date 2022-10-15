@@ -46,7 +46,7 @@ namespace FishNet.Plugins.FishyEOS.Util
                 createUserCallbackInfo => connect.createUserCallbackInfo = createUserCallbackInfo);
 
             var eosManager = UnityEngine.Object.FindObjectOfType<EOSManager>();
-            connect.coroutine = eosManager.StartCoroutine(connect.WaitForLoginCallbackInfo());
+            connect.coroutine = eosManager.StartCoroutine(connect.WaitForCreateUserCallbackInfo());
             return connect;
         }
 
