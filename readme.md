@@ -1,3 +1,5 @@
+# Still under development! Currently in Pre-Production. But available if you want to try it out. Most likely will break. :)
+
 # FishyEOS
 An Epic Online Services (EOS) implementation for Fish-Networking.
 
