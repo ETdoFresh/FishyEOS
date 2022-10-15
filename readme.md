@@ -57,4 +57,4 @@ You are not required to use git to download the package. Alternatively, you can 
    (A special "clientHost" will be created on server allowing to play as a client on the server)
 
 ### Testing Two Builds Locally
-EOS has limitations which prevent you from connecting to yourself using the same ID. To do so, you must have two Epic Connect Product User IDs. You can use the same device to log into both if they are different sign in providers (I often use EpicAccountId and DeviceToken).
+EOS has limitations which prevent you from connecting to yourself using the same ID. To do so, you must have two Epic Connect Product User IDs. You can use the same device to log into both if they are different sign in providers (I often use Developer and DeviceCode).
