@@ -31,8 +31,8 @@ You are not required to use git to download the package. Alternatively, you can 
 
 ## Setting Up
 
-1. Add an EOSManager Component somewhere in your scene.
-2. Add FishyEOS Transport component to **NetworkManager** object. 
+1. Add an EOSManager Component somewhere in your scene. Probably best on the **NetworkManager** GameObject.
+2. Add FishyEOS Transport component to **NetworkManager** GameObject. 
 3. Set transport varaible on the **TransportManager** Component to FishyEOS.
 
 ### As a Server
