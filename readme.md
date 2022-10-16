@@ -36,15 +36,15 @@ You are not required to use git to download the package. Alternatively, you can 
 3. Set transport varaible on the **TransportManager** Component to FishyEOS.
 
 ### As a Server
-1. Specify the EOS SocketName which you would like to listen from.
+1. Specify the EOS SocketName which you would like to listen from.  
    ex `FishyEOS`
 2. Start Server as normal.  
    `NetworkManager.ServerManager.StartConnection()`
 
 ### As a Client
-1. Specify the EOS SocketName which you would like to connect.
+1. Specify the EOS SocketName which you would like to connect.  
    ex `FishyEOS`
-2. Specify the ServerProductUserId which you would like to connect.
+2. Specify the ServerProductUserId which you would like to connect.  
    looks like `0002780586644887316944b9a41246b3`
 3. Start Client as normal.  
    `NetworkManager.ClientManager.StartConnection()`
