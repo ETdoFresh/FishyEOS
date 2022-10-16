@@ -2,6 +2,7 @@
 
 namespace FishNet.Transporting.FishyEOSPlugin
 {
+    /// <summary>A struct that contains the data for a FishyEOS packet.</summary>
     internal class LocalPacket
     {
         public byte[] Data { get; }

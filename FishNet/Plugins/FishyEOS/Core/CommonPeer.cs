@@ -10,13 +10,29 @@ namespace FishNet.Transporting.FishyEOSPlugin
 {
     public abstract class CommonPeer
     {
+        # region Private.
+
+        /// <summary>Current ConnectionState.</summary>
         private LocalConnectionState _connectionState = LocalConnectionState.Stopped;
 
+        #endregion
+
+        #region Protected.
+
+        /// <summary>Transport controlling this peer.</summary>
+        protected FishyEOS Transport;
+
+        #endregion
+
+        /// <summary>Returns the current ConnectionState.</summary>
+        /// <returns></returns>
         internal LocalConnectionState GetLocalConnectionState()
         {
             return _connectionState;
         }
 
+        /// <summary>Sets a new connection state.</summary>
+        /// <param name="connectionState"></param>
         protected virtual void SetLocalConnectionState(LocalConnectionState connectionState, bool server)
         {
             //If state hasn't changed.
@@ -31,22 +47,24 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 Transport.HandleClientConnectionState(new ClientConnectionStateArgs(connectionState, Transport.Index));
         }
 
-        protected FishyEOS Transport = null;
-
+        /// <summary>Initializes this for use.</summary>
+        /// <param name="transport"></param>
         internal void Initialize(FishyEOS transport)
         {
             Transport = transport;
         }
 
+        /// <summary>Clears a queue.</summary>
+        /// <param name="queue"></param>
         internal void ClearQueue(ref Queue<LocalPacket> queue)
         {
             while (queue.Count > 0)
             {
-                LocalPacket lp = queue.Dequeue();
-                //lp.Dispose();
+                var lp = queue.Dequeue();
             }
         }
 
+        /// <summary>Sends a message to remote user through EOS P2P Interface.</summary>
         internal Result Send(ProductUserId localUserId, ProductUserId remoteUserId, SocketId? socketId,
             byte channelId, ArraySegment<byte> segment)
         {
@@ -74,13 +92,14 @@ namespace FishNet.Transporting.FishyEOSPlugin
             return result;
         }
 
+        /// <summary>Returns a message from the EOS P2P Interface.</summary>
         protected bool Receive(ProductUserId localUserId, out ProductUserId remoteUserId, out ArraySegment<byte> data,
             out Channel channel)
         {
             remoteUserId = null;
             data = null;
             channel = Channel.Unreliable;
-            
+
             var getNextReceivedPacketSizeOptions = new GetNextReceivedPacketSizeOptions
             {
                 LocalUserId = localUserId,
@@ -119,7 +138,8 @@ namespace FishNet.Transporting.FishyEOSPlugin
 
             return true;
         }
-        
+
+        /// <summary>Gets the number of packets incoming from the EOS P2P Interface.</summary>
         protected ulong GetIncomingPacketQueueCurrentPacketCount()
         {
             var getPacketQueueOptions = new GetPacketQueueInfoOptions();

@@ -7,7 +7,7 @@ using UnityEngine;
 namespace FishNet.Plugins.FishyEOS.Util
 {
     /// <summary>
-    /// Start an EOS Connect Login with the passed in LoginOptions.
+    /// Logs into EOS Connect using coroutines.
     /// </summary>
     public class Connect
     {

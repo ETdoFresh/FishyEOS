@@ -12,26 +12,41 @@ namespace FishNet.Transporting.FishyEOSPlugin
 {
     public class ServerPeer : CommonPeer
     {
+        /// <summary>An auto-incrementing id for each peer.</summary>
         private static int _latestId = 1;
 
+        # region Private.
+
+        /// <summary>EOS Socket Id for this peer.</summary>
         private SocketId _socketId;
-        private ProductUserId _localUserId; // ServerUserId
+
+        /// <summary>EOS Server User Id for this peer.</summary>
+        private ProductUserId _localUserId;
+
+        /// <summary>Queue of incoming local client host packets</summary>
         private Queue<LocalPacket> _clientHostIncoming = new();
+
+        /// <summary>Reference to Local Client Host</summary>
         private ClientHostPeer _clientHost;
+
+        /// <summary>EOS Handle for Incoming Peer Requests.</summary>
         private ulong? _acceptPeerConnectionsEventHandle;
+
+        /// <summary>EOS Handle for Incoming Peer Connections.</summary>
         private Dictionary<Connection, ulong> _establishPeerConnectionEventHandles = new();
+
+        /// <summary>EOS Handle for Incoming Peer Disconnections.</summary>
         private Dictionary<Connection, ulong> _closePeerConnectionEventHandles = new();
+
+        /// <summary>List of connections to this server.</summary>
         private List<Connection> _clients = new();
+
+        /// <summary>Maximum number of connections allowed.</summary>
         private int _maximumClients = short.MaxValue;
 
-        internal RemoteConnectionState GetConnectionState(int connectionId)
-        {
-            if (_clients.Any(x => x.Id == connectionId))
-                return RemoteConnectionState.Started;
-            else
-                return RemoteConnectionState.Stopped;
-        }
+        #endregion
 
+        /// <summary>Starts the server.</summary>
         internal bool StartConnection()
         {
             base.SetLocalConnectionState(LocalConnectionState.Starting, true);
@@ -39,6 +54,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
             return true;
         }
 
+        /// <summary>Coroutine that authenticates with EOS and starts listening for incoming connections.</summary>
         private IEnumerator AuthenticateAndStartListeningForConnections()
         {
             // Attempt to Authenticate with EOS Connect...
@@ -52,6 +68,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 base.SetLocalConnectionState(LocalConnectionState.Stopped, true);
                 yield break;
             }
+
             if (Transport.NetworkManager.CanLog(LoggingType.Common))
                 Debug.Log($"[ServerPeer] Authenticated with EOS Connect. {EOSManager.Instance.GetProductUserId()}");
 
@@ -84,6 +101,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
             base.SetLocalConnectionState(LocalConnectionState.Started, true);
         }
 
+        /// <summary>Event Callback when peer connection request is received.</summary>
         private void OnPeerConnectionRequest(ref OnIncomingConnectionRequestInfo data)
         {
             var nextId = _latestId++;
@@ -118,6 +136,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
             }
         }
 
+        /// <summary>Event Callback when peer connection is established.</summary>
         private void OnPeerConnectionEstablished(ref OnPeerConnectionEstablishedInfo data)
         {
             var clientConnection = (Connection)data.ClientData;
@@ -144,6 +163,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
                     $"[ServerPeer] Established connection from {data.RemoteUserId} with handle #{data.SocketId} and connection id {clientConnection.Id}.");
         }
 
+        /// <summary>Event Callback when peer connection is closed.</summary>
         private void OnPeerConnectionClosed(ref OnRemoteConnectionClosedInfo data)
         {
             var clientConnection = (Connection)data.ClientData;
@@ -162,6 +182,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
                     $"[ServerPeer] Closed connection from {data.RemoteUserId} with handle #{data.SocketId} and connection id {clientConnection.Id}.");
         }
 
+        /// <summary>Stops the server.</summary>
         internal bool StopConnection()
         {
             if (GetLocalConnectionState() == LocalConnectionState.Stopped ||
@@ -218,6 +239,8 @@ namespace FishNet.Transporting.FishyEOSPlugin
             return true;
         }
 
+        /// <summary>Stops a remote client from the server, disconnecting the client.</summary>
+        /// <param name="connectionId"></param>
         internal bool StopConnection(int connectionId)
         {
             if (connectionId == FishyEOS.CLIENT_HOST_ID)
@@ -240,8 +263,20 @@ namespace FishNet.Transporting.FishyEOSPlugin
             return true;
         }
 
+        /// <summary>Gets the current ConnectionState of a remote client on the server.</summary>
+        /// <param name="connectionId">ConnectionId to get ConnectionState for.</param>
+        internal RemoteConnectionState GetConnectionState(int connectionId)
+        {
+            if (_clients.Any(x => x.Id == connectionId))
+                return RemoteConnectionState.Started;
+            else
+                return RemoteConnectionState.Stopped;
+        }
+
+        /// <summary>Unused by EOS.</summary>
         internal void IterateOutgoing() { }
 
+        /// <summary>Iterates through all incoming packets and handles them.</summary>
         internal void IterateIncoming()
         {
             if (GetLocalConnectionState() != LocalConnectionState.Started)
@@ -266,6 +301,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 }
         }
 
+        /// <summary>Sends a packet to a single, or all clients.</summary>
         internal void SendToClient(byte channelId, ArraySegment<byte> segment, int connectionId)
         {
             if (GetLocalConnectionState() != LocalConnectionState.Started)
@@ -306,27 +342,32 @@ namespace FishNet.Transporting.FishyEOSPlugin
             }
         }
 
+        /// <summary>Returns the maximum number of clients allowed to connect to the server. If the transport does not support this method the value -1 is returned.</summary>
         public int GetMaximumClients()
         {
             return _maximumClients;
         }
 
+        /// <summary>Sets the maximum number of clients allowed to connect to the server.</summary>
         public void SetMaximumClients(int value)
         {
             _maximumClients = value;
         }
 
+        /// <summary>Sets the local client host.</summary>
         internal void SetClientHostPeer(ClientHostPeer clientHostPeer)
         {
             _clientHost = clientHostPeer;
         }
 
+        /// <summary>Queues a received packet from the local client host.</summary>
         internal void ReceivedFromClientHost(LocalPacket packet)
         {
             if (_clientHost == null || _clientHost.GetLocalConnectionState() != LocalConnectionState.Started) return;
             _clientHostIncoming.Enqueue(packet);
         }
 
+        /// <summary>Called when Client Host Connection state changes.</summary>
         internal void HandleClientHostConnectionStateChange(LocalConnectionState state, bool server)
         {
             switch (state)
@@ -344,6 +385,13 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 default:
                     throw new ArgumentOutOfRangeException(nameof(state), state, null);
             }
+        }
+
+        /// <summary>Gets the EOS Local Product User Id of the server.</summary>
+        internal string GetConnectionAddress(int connectionId)
+        {
+            var client = _clients.FirstOrDefault(x => x.Id == connectionId);
+            return client.LocalUserId.ToString();
         }
     }
 }

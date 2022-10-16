@@ -11,37 +11,70 @@ namespace FishNet.Transporting.FishyEOSPlugin
     [AddComponentMenu("FishNet/Transport/FishyEOS")]
     public class FishyEOS : Transport
     {
+        #region Serialized.
+
+        /// <summary>Maximum number of players which may be connected at once.</summary>
         [Tooltip("Maximum number of players which may be connected at once.")]
         [Range(1, 9999)]
         [SerializeField]
         private int _maximumClients = 4095;
 
+        /// <summary>Socket ID [Must be the same on all clients and server].</summary>
         [Header("EOS")]
         [Tooltip("Socket ID [Must be the same on all clients and server].")]
         [SerializeField] private string socketName = "FishyEOS";
 
+        /// <summary>Server Product User ID. Must be set for remote clients.</summary>
         [Tooltip("Server Product User ID. Must be set for remote clients.")]
         [SerializeField] private string remoteServerProductUserId;
-        
-        [Tooltip("Auth Connect Data. Must be unique for all clients and server. [Host only needs 1 unique value.]")]
-        [SerializeField] private AuthConnectData _authConnectData = new AuthConnectData();
 
+        /// <summary>Authentication Data for EOS Connect</summary>
+        [Tooltip("Auth Connect Data. Must be unique for all clients and server. [Host only needs 1 unique value.]")]
+        [SerializeField] private AuthConnectData authConnectData = new();
+
+        #endregion
+
+        #region Private.
+
+        /// <summary>Server peer and handler</summary>
         private ServerPeer _server = new();
+
+        /// <summary>Client peer and handler</summary>
         private ClientPeer _client = new();
+
+        /// <summary>Client Host peer and handler</summary>
         private ClientHostPeer _clientHost = new();
 
+        #endregion
+
+        #region Constants.
+
+        /// <summary>Id to use for client when acting as host.</summary>
         internal const int CLIENT_HOST_ID = short.MaxValue;
 
-        
-        public AuthConnectData AuthConnectData => _authConnectData;
+        #endregion
+
+        #region Properties.
+
+        /// <summary> Authentication Data for EOS Connect</summary>
+        public AuthConnectData AuthConnectData => authConnectData;
+
+        /// <summary>Name of EOS Socket. Must be the same on all clients and server.</summary>
         public string SocketName => socketName;
+
+        /// <summary>Product User Id of Local EOS Connection</summary>
         public string LocalProductUserId => EOSManager.Instance.GetProductUserId().ToString();
 
+        /// <summary>Product User Id of Remote Server EOS Connection</summary>
         public string RemoteProductUserId
         {
             get => remoteServerProductUserId;
             set => remoteServerProductUserId = value;
         }
+
+        #endregion
+
+        #region Initialization and unity.
 
         public override void Initialize(NetworkManager networkManager, int transportIndex)
         {
@@ -56,17 +89,30 @@ namespace FishNet.Transporting.FishyEOSPlugin
             Shutdown();
         }
 
-        // -----------------------------------
+        #endregion
 
+        #region ConnectionStates.
+
+        // -----------------------------------
+        /// <summary>Gets the EOS Connect Peer Id of a remote connection Id.</summary>
+        /// <param name="connectionId"></param>
+        /// <returns></returns>
         public override string GetConnectionAddress(int connectionId)
         {
-            return String.Empty;
+            return _server.GetConnectionAddress(connectionId);
         }
 
+        /// <summary>Called when a connection state changes for the local client.</summary>
         public override event Action<ClientConnectionStateArgs> OnClientConnectionState;
+
+        /// <summary>Called when a connection state changes for the local server.</summary>
         public override event Action<ServerConnectionStateArgs> OnServerConnectionState;
+
+        /// <summary>Called when a connection state changes for a remote client.</summary>
         public override event Action<RemoteConnectionStateArgs> OnRemoteConnectionState;
 
+        /// <summary>Gets the current local ConnectionState.</summary>
+        /// <param name="server">True if getting ConnectionState for the server.</param>
         public override LocalConnectionState GetConnectionState(bool server)
         {
             if (server)
@@ -75,28 +121,40 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 return _client.GetLocalConnectionState();
         }
 
+        /// <summary>Gets the current ConnectionState of a remote client on the server.</summary>
+        /// <param name="connectionId">ConnectionId to get ConnectionState for.</param>
         public override RemoteConnectionState GetConnectionState(int connectionId)
         {
             return _server.GetConnectionState(connectionId);
         }
 
+        /// <summary>Handles a ConnectionStateArgs for the local client.</summary>
+        /// <param name="connectionStateArgs"></param>
         public override void HandleClientConnectionState(ClientConnectionStateArgs connectionStateArgs)
         {
             OnClientConnectionState?.Invoke(connectionStateArgs);
         }
 
+        /// <summary>Handles a ConnectionStateArgs for the local server.</summary>
+        /// <param name="connectionStateArgs"></param>
         public override void HandleServerConnectionState(ServerConnectionStateArgs connectionStateArgs)
         {
             OnServerConnectionState?.Invoke(connectionStateArgs);
         }
 
+        /// <summary>Handles a ConnectionStateArgs for a remote client.</summary>
+        /// <param name="connectionStateArgs"></param>
         public override void HandleRemoteConnectionState(RemoteConnectionStateArgs connectionStateArgs)
         {
             OnRemoteConnectionState?.Invoke(connectionStateArgs);
         }
 
-        // -----------------------------------
+        #endregion
 
+        #region Iterating.
+
+        /// <summary>Processes data received by the socket.</summary>
+        /// <param name="server">True to process data received on the server.</param>
         public override void IterateIncoming(bool server)
         {
             if (server)
@@ -110,6 +168,8 @@ namespace FishNet.Transporting.FishyEOSPlugin
             }
         }
 
+        /// <summary>Processes data to be sent by the socket.</summary>
+        /// <param name="server">True to process data received on the server.</param>
         public override void IterateOutgoing(bool server)
         {
             if (server)
@@ -122,69 +182,105 @@ namespace FishNet.Transporting.FishyEOSPlugin
             }
         }
 
-        // -----------------------------------
+        #endregion
 
+        #region ReceivedData.
+
+        /// <summary>Called when client receives data.</summary>
         public override event Action<ClientReceivedDataArgs> OnClientReceivedData;
 
+        /// <summary>Handles a ClientReceivedDataArgs.</summary>
+        /// <param name="receivedDataArgs"></param>
         public override void HandleClientReceivedDataArgs(ClientReceivedDataArgs receivedDataArgs)
         {
             OnClientReceivedData?.Invoke(receivedDataArgs);
         }
 
+        /// <summary>Called when server receives data.</summary>
         public override event Action<ServerReceivedDataArgs> OnServerReceivedData;
 
+        /// <summary>Handles a ClientReceivedDataArgs.</summary>
+        /// <param name="receivedDataArgs"></param>
         public override void HandleServerReceivedDataArgs(ServerReceivedDataArgs receivedDataArgs)
         {
             OnServerReceivedData?.Invoke(receivedDataArgs);
         }
 
-        // -----------------------------------
+        #endregion
 
+        #region SendingData.
+
+        /// <summary>Sends to the server or all clients.</summary>
+        /// <param name="channelId">Channel to use.</param>
+        /// <param name="segment">Data to send.</param>
         public override void SendToServer(byte channelId, ArraySegment<byte> segment)
         {
             _client.SendToServer(channelId, segment);
             _clientHost.SendToServer(channelId, segment);
         }
 
+        /// <summary>Sends data to a client.</summary>
+        /// <param name="channelId"></param>
+        /// <param name="segment"></param>
+        /// <param name="connectionId"></param>
         public override void SendToClient(byte channelId, ArraySegment<byte> segment, int connectionId)
         {
             _server.SendToClient(channelId, segment, connectionId);
         }
 
-        // -----------------------------------
+        #endregion
+
+        #region Configuration.
 
         public override bool IsLocalTransport(int connectionId)
         {
             return true;
         }
 
+        /// <summary>
+        /// Returns the maximum number of clients allowed to connect to the server.
+        /// If the transport does not support this method the value -1 is returned.
+        /// </summary>
+        /// <returns></returns>
         public override int GetMaximumClients()
         {
             return _server.GetMaximumClients();
         }
 
+        /// <summary>
+        /// Sets maximum number of clients allowed to connect to the server.
+        /// If applied at runtime and clients exceed this value existing clients will stay connected but new clients may not connect.
+        /// </summary>
+        /// <param name="value"></param>
         public override void SetMaximumClients(int value)
         {
             _server.SetMaximumClients(value);
         }
 
+        /// <summary>EOS Not Used</summary>
         public override void SetClientAddress(string address)
         {
             _ = address;
         }
 
+        /// <summary>EOS Not Used</summary>
         public override void SetServerBindAddress(string address, IPAddressType addressType)
         {
             _ = address;
         }
 
+        /// <summary>EOS Not Used</summary>
         public override void SetPort(ushort port)
         {
             _ = port;
         }
 
-        // -----------------------------------
+        #endregion
 
+        #region Start and stop.
+
+        /// <summary>Starts the local server or client using configured settings.</summary>
+        /// <param name="server">True to start server.</param>
         public override bool StartConnection(bool server)
         {
             if (server)
@@ -193,6 +289,8 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 return StartClient();
         }
 
+        /// <summary>Stops the local server or client. </summary>
+        /// <param name="server">True to stop server.</param>
         public override bool StopConnection(bool server)
         {
             if (server)
@@ -201,11 +299,17 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 return StopClient();
         }
 
+        /// <summary>Stops a remote client from the server, disconnecting the client.</summary>
+        /// <param name="connectionId">ConnectionId of the client to disconnect.</param>
+        /// <param name="immediately">True to abrutly stop the client socket. The technique used to accomplish immediate disconnects may vary depending on the transport.
+        /// When not using immediate disconnects it's recommended to perform disconnects using the ServerManager rather than accessing the transport directly.
+        /// </param>
         public override bool StopConnection(int connectionId, bool immediately)
         {
             return StopClient(connectionId, immediately);
         }
 
+        /// <summary>Stops both client and server.</summary>
         public override void Shutdown()
         {
             //Stops client then server connections.
@@ -213,8 +317,9 @@ namespace FishNet.Transporting.FishyEOSPlugin
             StopConnection(true);
         }
 
-        // -----------------------------------
+        #region Privates.
 
+        /// <summary>Starts server.</summary>
         private bool StartServer()
         {
             if (_server.GetLocalConnectionState() != LocalConnectionState.Stopped)
@@ -229,7 +334,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
              * and start the client host variant. */
             if (clientRunning)
                 _client.StopConnection();
-            
+
             var result = _server.StartConnection();
 
             //If need to restart client.
@@ -239,6 +344,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
             return result;
         }
 
+        /// <summary>Stops server.</summary>
         private bool StopServer()
         {
             if (_server != null)
@@ -247,6 +353,8 @@ namespace FishNet.Transporting.FishyEOSPlugin
             return false;
         }
 
+        /// <summary>Starts the client.</summary>
+        /// <param name="address"></param>
         private bool StartClient()
         {
             //If not acting as a host.
@@ -262,7 +370,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 //Stop client host if running.
                 if (_clientHost.GetLocalConnectionState() != LocalConnectionState.Stopped)
                     _clientHost.StopConnection();
-                
+
                 _client.StartConnection();
             }
             //Acting as host.
@@ -274,6 +382,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
             return true;
         }
 
+        /// <summary>Stops the client.</summary>
         private bool StopClient()
         {
             bool result = false;
@@ -284,16 +393,29 @@ namespace FishNet.Transporting.FishyEOSPlugin
             return result;
         }
 
+        /// <summary>Stops the client.</summary>
         private bool StopClient(int connectionId, bool immediately)
         {
             return _server.StopConnection(connectionId);
         }
 
-        // -----------------------------------
+        #endregion
 
+        #endregion
+
+        #region Channels.
+
+        /// <summary>
+        /// Gets the MTU for a channel. This should take header size into consideration.
+        /// For example, if MTU is 1200 and a packet header for this channel is 10 in size, this method should return 1190.
+        /// </summary>
+        /// <param name="channel"></param>
+        /// <returns></returns>
         public override int GetMTU(byte channel)
         {
             return P2PInterface.MaxPacketSize;
         }
+
+        #endregion
     }
 }

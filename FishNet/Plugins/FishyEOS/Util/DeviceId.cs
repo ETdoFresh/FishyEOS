@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace FishNet.Plugins.FishyEOS.Util
 {
+    /// <summary>
+    /// Creates a new DeviceId for use with Connect.LoginWithDeviceToken()
+    /// </summary>
     public class DeviceId
     {
         public CreateDeviceIdCallbackInfo? createDeviceIdCallbackInfo;

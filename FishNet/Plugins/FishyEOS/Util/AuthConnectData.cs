@@ -8,6 +8,10 @@ using LoginCallbackInfo = Epic.OnlineServices.Connect.LoginCallbackInfo;
 
 namespace FishNet.Plugins.FishyEOS.Util
 {
+    /// <summary>
+    /// All the data necessary to login to EOS and connect to a remote peer.
+    /// Also contains a coroutine to perform login and connect to remote peer.
+    /// </summary>
     [Serializable]
     public class AuthConnectData
     {

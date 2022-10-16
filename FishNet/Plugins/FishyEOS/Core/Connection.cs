@@ -3,6 +3,7 @@ using Epic.OnlineServices.P2P;
 
 namespace FishNet.Transporting.FishyEOSPlugin
 {
+    /// <summary>A struct that contains information about connection between two peers.</summary>
     public struct Connection
     {
         public int Id;
