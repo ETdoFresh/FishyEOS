@@ -1,4 +1,7 @@
-# Still under development! Currently in Pre-Production. But available if you want to try it out. Most likely will break. :)
+# !!Still under development! Currently in Pre-Production!!
+But posting it here in case you want to help try it out and help me test. :smile:  
+If there are issues you want to report, let me know either here in [Issues](https://github.com/ETdoFresh/FishyEOS/issues).  
+Or ask me [ETdoFresh] in [FirstGearGames Discord](https://discord.gg/Ta9HgDh4Hj).
 
 # FishyEOS
 An Epic Online Services (EOS) implementation for Fish-Networking.
@@ -8,10 +11,8 @@ Thank you [ETdoFresh](https://github.com/sponsors/etdofresh) for your support.
 
 ## Dependencies
 
-Fish-Networking https://github.com/FirstGearGames/FishNet
-
-These projects need to be installed and working before you can use this transport.
-1. [Epic Online Services Plugin for Unity](https://github.com/PlayEveryWare/eos_plugin_for_unity_upm) FishyEOS relies on PlayEveryWare's EOS Plugin for Unity to communicate with the [EOS API](https://dev.epicgames.com/docs/api-ref/interfaces).  
+1. Fish-Networking https://github.com/FirstGearGames/FishNet
+2. [Epic Online Services Plugin for Unity](https://github.com/PlayEveryWare/eos_plugin_for_unity_upm) FishyEOS relies on PlayEveryWare's EOS Plugin for Unity to communicate with the [EOS API](https://dev.epicgames.com/docs/api-ref/interfaces).  
     a. [Configuring the Plugin in the EOS Plugin for Unity Readme](https://github.com/PlayEveryWare/eos_plugin_for_unity#configuring-the-plugin) are useful directions if you need to setup the plugin in your project.
 
 
@@ -21,7 +22,7 @@ These projects need to be installed and working before you can use this transpor
 
 1. Open Unity Package Manager. **Unity > Window > Package Manager**
 2. Add a package from git URL. **Package Manager > + > Add package from git URL...**
-3. Enter this url: `https://github.com/ETdoFresh/FishyEOS.git`
+3. Enter this url: `https://github.com/ETdoFresh/FishyEOS.git?path=/FishNet/Plugins/FishyEOS`
 
 ### As a local Unity Package
 
@@ -30,8 +31,9 @@ You are not required to use git to download the package. Alternatively, you can 
 
 ## Setting Up
 
-1. Add EOSP2P Transport component to **NetworkManager** object. 
-2. Set transport varaible on the **TransportManager** Component to EOSP2P.
+1. Add an EOSManager Component somewhere in your scene. Probably best on the **NetworkManager** GameObject.
+2. Add FishyEOS Transport component to **NetworkManager** GameObject. 
+3. Set transport varaible on the **TransportManager** Component to FishyEOS.
 
 ### As a Server
 1. Before starting Server, authenticate with EOS Connect.  
@@ -55,4 +57,4 @@ You are not required to use git to download the package. Alternatively, you can 
    (A special "clientHost" will be created on server allowing to play as a client on the server)
 
 ### Testing Two Builds Locally
-EOS has limitations which prevent you from connecting to yourself using the same ID. To do so, you must have two Epic Connect Product User IDs. You can use the same device to log into both if they are different sign in providers (I often use EpicAccountId and DeviceToken).
+EOS has limitations which prevent you from connecting to yourself using the same ID. To do so, you must have two Epic Connect Product User IDs. You can use the same device to log into both if they are different sign in providers (I often use Developer and DeviceCode).
