@@ -60,7 +60,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
             while (_incoming.Count > 0)
             {
                 var packet = _incoming.Dequeue();
-                ArraySegment<byte> segment = new(packet.Data, 0, packet.Length);
+                ArraySegment<byte> segment = new ArraySegment<byte>(packet.Data, 0, packet.Length);
                 Transport.HandleClientReceivedDataArgs(new ClientReceivedDataArgs(segment, packet.Channel, Transport.Index));
                 ByteArrayPool.Store(packet.Data);
             }
