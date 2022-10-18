@@ -1,9 +1,9 @@
 ﻿using System;
 using Epic.OnlineServices.P2P;
+using Epic.OnlineServices.Unity;
 using FishNet.Managing;
 using FishNet.Managing.Logging;
 using FishNet.Plugins.FishyEOS.Util;
-using PlayEveryWare.EpicOnlineServices;
 using UnityEngine;
 
 namespace FishNet.Transporting.FishyEOSPlugin
@@ -30,20 +30,20 @@ namespace FishNet.Transporting.FishyEOSPlugin
 
         /// <summary>Authentication Data for EOS Connect</summary>
         [Tooltip("Auth Connect Data. Must be unique for all clients and server. [Host only needs 1 unique value.]")]
-        [SerializeField] private AuthConnectData authConnectData = new();
+        [SerializeField] private AuthConnectData authConnectData = new AuthConnectData();
 
         #endregion
 
         #region Private.
 
         /// <summary>Server peer and handler</summary>
-        private ServerPeer _server = new();
+        private ServerPeer _server = new ServerPeer();
 
         /// <summary>Client peer and handler</summary>
-        private ClientPeer _client = new();
+        private ClientPeer _client = new ClientPeer();
 
         /// <summary>Client Host peer and handler</summary>
-        private ClientHostPeer _clientHost = new();
+        private ClientHostPeer _clientHost = new ClientHostPeer();
 
         #endregion
 
@@ -63,7 +63,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
         public string SocketName => socketName;
 
         /// <summary>Product User Id of Local EOS Connection</summary>
-        public string LocalProductUserId => EOSManager.Instance.GetProductUserId().ToString();
+        public string LocalProductUserId => EOS.GetPlatformInterface().GetConnectInterface().GetLoggedInUserByIndex(0).ToString();
 
         /// <summary>Product User Id of Remote Server EOS Connection</summary>
         public string RemoteProductUserId

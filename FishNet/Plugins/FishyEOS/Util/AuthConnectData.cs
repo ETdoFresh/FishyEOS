@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using Epic.OnlineServices;
 using Epic.OnlineServices.Auth;
-using PlayEveryWare.EpicOnlineServices;
+using Epic.OnlineServices.Unity;
 using UnityEngine;
 using LoginCallbackInfo = Epic.OnlineServices.Connect.LoginCallbackInfo;
 
@@ -24,13 +24,9 @@ namespace FishNet.Plugins.FishyEOS.Util
 
         public void Connect()
         {
-            var eosManager = UnityEngine.Object.FindObjectOfType<EOSManager>();
-            if (!eosManager)
-            {
-                Debug.LogError("EOSManager not found");
-                return;
-            }
-            coroutine = eosManager.StartCoroutine(ConnectCoroutine());
+            EOS.GetPlatformInterface();
+            var eos = UnityEngine.Object.FindObjectOfType<EOS>();
+            coroutine = eos.StartCoroutine(ConnectCoroutine());
         }
 
         public IEnumerator ConnectCoroutine()

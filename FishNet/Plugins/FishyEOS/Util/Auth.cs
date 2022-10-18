@@ -1,7 +1,7 @@
 using System.Collections;
 using Epic.OnlineServices;
 using Epic.OnlineServices.Auth;
-using PlayEveryWare.EpicOnlineServices;
+using Epic.OnlineServices.Unity;
 using UnityEngine;
 using LoginCallbackInfo = Epic.OnlineServices.Auth.LoginCallbackInfo;
 
@@ -21,9 +21,7 @@ namespace FishNet.Plugins.FishyEOS.Util
     /// </summary>
     public class Auth
     {
-        public LoginCredentialType loginCredentialType;
-        public string id;
-        public string token;
+        public LoginOptions loginOptions;
         public LoginCallbackInfo? loginCallbackInfo;
         public Coroutine coroutine;
         public float timeoutSeconds;
@@ -33,15 +31,24 @@ namespace FishNet.Plugins.FishyEOS.Util
             ExternalCredentialType externalType = ExternalCredentialType.Epic, float timeoutSeconds = 30)
         {
             var auth = new Auth();
-            auth.loginCredentialType = loginCredentialType;
-            auth.id = id;
-            auth.token = token;
             auth.timeoutSeconds = timeoutSeconds;
+            auth.loginOptions = new LoginOptions
+            {
+                Credentials = new Credentials
+                {
+                    Id = id,
+                    Token = token,
+                    Type = loginCredentialType,
+                    SystemAuthCredentialsOptions = default,
+                    ExternalType = ExternalCredentialType.Epic
+                },
+                ScopeFlags = AuthScopeFlags.NoFlags
+            };
             
-            EOSManager.Instance.StartLoginWithLoginTypeAndToken(loginCredentialType, id, token,
-                callbackInfo => auth.loginCallbackInfo = callbackInfo);
+            EOS.GetPlatformInterface().GetAuthInterface().Login(ref auth.loginOptions, null,
+                delegate(ref LoginCallbackInfo callbackInfo) { auth.loginCallbackInfo = callbackInfo; });
 
-            var eosManager = UnityEngine.Object.FindObjectOfType<EOSManager>();
+            var eosManager = UnityEngine.Object.FindObjectOfType<EOS>();
             auth.coroutine = eosManager.StartCoroutine(auth.StartLoginWithLoginOptionsCoroutine());
 
             return auth;

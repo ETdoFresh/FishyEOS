@@ -11,7 +11,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
         private ServerPeer _server;
         
         /// <summary>Queue of incoming packets for Client to process</summary>
-        private Queue<LocalPacket> _incoming = new();
+        private Queue<LocalPacket> _incoming = new Queue<LocalPacket>();
         #endregion
 
         /// <summary>Starts the client connection.</summary>

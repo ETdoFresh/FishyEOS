@@ -1,8 +1,12 @@
 using System.Collections;
 using Epic.OnlineServices;
+using Epic.OnlineServices.Auth;
 using Epic.OnlineServices.Connect;
-using PlayEveryWare.EpicOnlineServices;
+using Epic.OnlineServices.Unity;
 using UnityEngine;
+using Credentials = Epic.OnlineServices.Connect.Credentials;
+using LoginCallbackInfo = Epic.OnlineServices.Connect.LoginCallbackInfo;
+using LoginOptions = Epic.OnlineServices.Connect.LoginOptions;
 
 namespace FishNet.Plugins.FishyEOS.Util
 {
@@ -11,19 +15,34 @@ namespace FishNet.Plugins.FishyEOS.Util
     /// </summary>
     public class Connect
     {
-        public Credentials credentials;
+        public LoginOptions loginOptions;
         public LoginCallbackInfo? loginCallbackInfo;
+        public CreateUserOptions createUserOptions;
+        public CreateUserCallbackInfo? createUserCallbackInfo;
         public Coroutine coroutine;
         public float timeoutSeconds = 30;
-        public CreateUserCallbackInfo? createUserCallbackInfo;
 
         public static Connect LoginWithEpicAccount(EpicAccountId epicAccountId, float timeoutSeconds = 30)
         {
             var connect = new Connect();
-            EOSManager.Instance.StartConnectLoginWithEpicAccount(epicAccountId,
-                loginCallbackInfo => connect.loginCallbackInfo = loginCallbackInfo);
 
-            var eosManager = UnityEngine.Object.FindObjectOfType<EOSManager>();
+            var copyUserAuthTokenOptions = new CopyUserAuthTokenOptions();
+            EOS.GetPlatformInterface().GetAuthInterface()
+                .CopyUserAuthToken(ref copyUserAuthTokenOptions, epicAccountId, out var token);
+
+            connect.loginOptions = new LoginOptions
+            {
+                Credentials = new Credentials
+                {
+                    Token = token?.AccessToken,
+                    Type = ExternalCredentialType.Epic
+                },
+                UserLoginInfo = null
+            };
+            EOS.GetPlatformInterface().GetConnectInterface().Login(ref connect.loginOptions, null,
+                delegate(ref LoginCallbackInfo loginCallbackInfo) { connect.loginCallbackInfo = loginCallbackInfo; });
+
+            var eosManager = UnityEngine.Object.FindObjectOfType<EOS>();
             connect.coroutine = eosManager.StartCoroutine(connect.WaitForLoginCallbackInfo());
             return connect;
         }
@@ -31,10 +50,22 @@ namespace FishNet.Plugins.FishyEOS.Util
         public static Connect LoginWithDeviceToken(string displayName)
         {
             var connect = new Connect();
-            EOSManager.Instance.StartConnectLoginWithDeviceToken(displayName,
-                loginCallbackInfo => connect.loginCallbackInfo = loginCallbackInfo);
+            connect.loginOptions = new LoginOptions
+            {
+                Credentials = new Credentials
+                {
+                    Token = null,
+                    Type = ExternalCredentialType.DeviceidAccessToken
+                },
+                UserLoginInfo = new UserLoginInfo
+                {
+                    DisplayName = displayName
+                }
+            };
+            EOS.GetPlatformInterface().GetConnectInterface().Login(ref connect.loginOptions, null,
+                delegate(ref LoginCallbackInfo loginCallbackInfo) { connect.loginCallbackInfo = loginCallbackInfo; });
 
-            var eosManager = UnityEngine.Object.FindObjectOfType<EOSManager>();
+            var eosManager = UnityEngine.Object.FindObjectOfType<EOS>();
             connect.coroutine = eosManager.StartCoroutine(connect.WaitForLoginCallbackInfo());
             return connect;
         }
@@ -42,10 +73,17 @@ namespace FishNet.Plugins.FishyEOS.Util
         public static Connect CreateUserWithContinuanceToken(ContinuanceToken continuanceToken)
         {
             var connect = new Connect();
-            EOSManager.Instance.CreateConnectUserWithContinuanceToken(continuanceToken,
-                createUserCallbackInfo => connect.createUserCallbackInfo = createUserCallbackInfo);
+            connect.createUserOptions = new CreateUserOptions
+            {
+                ContinuanceToken = continuanceToken
+            };
+            EOS.GetPlatformInterface().GetConnectInterface().CreateUser(ref connect.createUserOptions, null,
+                delegate(ref CreateUserCallbackInfo createUserCallbackInfo)
+                {
+                    connect.createUserCallbackInfo = createUserCallbackInfo;
+                });
 
-            var eosManager = UnityEngine.Object.FindObjectOfType<EOSManager>();
+            var eosManager = UnityEngine.Object.FindObjectOfType<EOS>();
             connect.coroutine = eosManager.StartCoroutine(connect.WaitForCreateUserCallbackInfo());
             return connect;
         }
@@ -64,7 +102,7 @@ namespace FishNet.Plugins.FishyEOS.Util
                 yield return null;
             }
         }
-        
+
         private IEnumerator WaitForCreateUserCallbackInfo()
         {
             while (!createUserCallbackInfo.HasValue)

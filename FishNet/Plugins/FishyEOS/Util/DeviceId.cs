@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using Epic.OnlineServices.Connect;
-using PlayEveryWare.EpicOnlineServices;
+using Epic.OnlineServices.Unity;
 using UnityEngine;
 
 namespace FishNet.Plugins.FishyEOS.Util
@@ -21,10 +21,10 @@ namespace FishNet.Plugins.FishyEOS.Util
                 DeviceModel =
                     $"{SystemInfo.deviceModel} {SystemInfo.deviceName} {SystemInfo.deviceType} {SystemInfo.operatingSystem}",
             };
-            EOSManager.Instance.GetEOSConnectInterface().CreateDeviceId(ref options, null,
+            EOS.GetPlatformInterface().GetConnectInterface().CreateDeviceId(ref options, null,
                 (ref CreateDeviceIdCallbackInfo data) => deviceId.createDeviceIdCallbackInfo = data);
             
-            var eosManager = UnityEngine.Object.FindObjectOfType<EOSManager>();
+            var eosManager = UnityEngine.Object.FindObjectOfType<EOS>();
             deviceId.coroutine = eosManager.StartCoroutine(deviceId.WaitForCreateDeviceIdCallbackInfo());
             return deviceId;
         }

@@ -1,10 +1,10 @@
 {
     "name": "Fishnet.Plugins.FishyEOS",
-    "rootNamespace": "",
     "references": [
         "GUID:7c88a4a7926ee5145ad2dfa06f454c67",
         "GUID:be1f6e9efffcfce41aeb5c2f4c27cf75",
-        "GUID:2ced8f3cc58f63843bc26c7591a35628"
+        "GUID:2ced8f3cc58f63843bc26c7591a35628",
+        "GUID:ca5478b2ac3dc7d4688493ecb081f79b"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

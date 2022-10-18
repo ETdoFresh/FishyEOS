@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using Epic.OnlineServices;
 using Epic.OnlineServices.P2P;
+using Epic.OnlineServices.Unity;
 using FishNet.Managing.Logging;
-using PlayEveryWare.EpicOnlineServices;
 using UnityEngine;
 
 namespace FishNet.Transporting.FishyEOSPlugin
@@ -85,7 +85,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 Reliability = reliability,
                 AllowDelayedDelivery = allowDelayedDelivery
             };
-            var result = EOSManager.Instance.GetEOSP2PInterface().SendPacket(ref sendPacketOptions);
+            var result = EOS.GetPlatformInterface().GetP2PInterface().SendPacket(ref sendPacketOptions);
             if (result != Result.Success)
                 Debug.LogWarning(
                     $"Failed to send packet to {remoteUserId} with size {segment.Count} with error {result}");
@@ -97,14 +97,14 @@ namespace FishNet.Transporting.FishyEOSPlugin
             out Channel channel)
         {
             remoteUserId = null;
-            data = null;
+            data = default;
             channel = Channel.Unreliable;
 
             var getNextReceivedPacketSizeOptions = new GetNextReceivedPacketSizeOptions
             {
                 LocalUserId = localUserId,
             };
-            var getPacketSizeResult = EOSManager.Instance.GetEOSP2PInterface()
+            var getPacketSizeResult = EOS.GetPlatformInterface().GetP2PInterface()
                 .GetNextReceivedPacketSize(ref getNextReceivedPacketSizeOptions, out var packetSize);
             if (getPacketSizeResult == Result.NotFound)
             {
@@ -125,7 +125,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 MaxDataSizeBytes = packetSize,
             };
             data = new ArraySegment<byte>(new byte[packetSize]);
-            var receivePacketResult = EOSManager.Instance.GetEOSP2PInterface()
+            var receivePacketResult = EOS.GetPlatformInterface().GetP2PInterface()
                 .ReceivePacket(ref receivePacketOptions, out remoteUserId, out _, out var channelByte, data, out _);
             channel = (Channel)channelByte;
             if (receivePacketResult != Result.Success)
@@ -143,7 +143,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
         protected ulong GetIncomingPacketQueueCurrentPacketCount()
         {
             var getPacketQueueOptions = new GetPacketQueueInfoOptions();
-            var getPacketQueueResult = EOSManager.Instance.GetEOSP2PInterface()
+            var getPacketQueueResult = EOS.GetPlatformInterface().GetP2PInterface()
                 .GetPacketQueueInfo(ref getPacketQueueOptions, out var packetQueueInfo);
             if (getPacketQueueResult != Result.Success)
             {
