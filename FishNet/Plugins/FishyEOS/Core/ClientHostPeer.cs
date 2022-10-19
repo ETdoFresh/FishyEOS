@@ -7,14 +7,20 @@ namespace FishNet.Transporting.FishyEOSPlugin
     public class ClientHostPeer : CommonPeer
     {
         #region Private
-        /// <summary>Reference to the Local Server Peer</summary>
+        /// <summary>
+        /// Reference to the Local Server Peer.
+        /// </summary>
         private ServerPeer _server;
         
-        /// <summary>Queue of incoming packets for Client to process</summary>
+        /// <summary>
+        /// Queue of incoming packets for Client to process.
+        /// </summary>
         private Queue<LocalPacket> _incoming = new Queue<LocalPacket>();
         #endregion
 
-        /// <summary>Starts the client connection.</summary>
+        /// <summary>
+        /// Starts the client connection.
+        /// </summary>
         internal bool StartConnection(ServerPeer serverPeer)
         {
             if (serverPeer == null) return false;
@@ -30,7 +36,9 @@ namespace FishNet.Transporting.FishyEOSPlugin
             return true;
         }
 
-        /// <summary>Sets a new connection state.</summary>
+        /// <summary>
+        /// Sets a new connection state.
+        /// </summary>
         protected override void SetLocalConnectionState(LocalConnectionState connectionState, bool server)
         {
             base.SetLocalConnectionState(connectionState, server);
@@ -38,7 +46,9 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 _server.HandleClientHostConnectionStateChange(connectionState, server);
         }
 
-        /// <summary>Stops the client connection.</summary>
+        /// <summary>
+        /// Stops the client connection.
+        /// </summary>
         internal bool StopConnection()
         {
             if (GetLocalConnectionState() == LocalConnectionState.Stopped ||
@@ -52,7 +62,9 @@ namespace FishNet.Transporting.FishyEOSPlugin
             return true;
         }
 
-        /// <summary>Iterate on incoming packets.</summary>
+        /// <summary>
+        /// Iterate on incoming packets.
+        /// </summary>
         internal void IterateIncoming()
         {
             if (GetLocalConnectionState() != LocalConnectionState.Started) return;
@@ -61,18 +73,22 @@ namespace FishNet.Transporting.FishyEOSPlugin
             {
                 var packet = _incoming.Dequeue();
                 ArraySegment<byte> segment = new ArraySegment<byte>(packet.Data, 0, packet.Length);
-                Transport.HandleClientReceivedDataArgs(new ClientReceivedDataArgs(segment, packet.Channel, Transport.Index));
+                _transport.HandleClientReceivedDataArgs(new ClientReceivedDataArgs(segment, packet.Channel, _transport.Index));
                 ByteArrayPool.Store(packet.Data);
             }
         }
 
-        /// <summary>Called when local server sends local client data</summary>
+        /// <summary>
+        /// Called when local server sends local client data.
+        /// </summary>
         internal void ReceivedFromLocalServer(LocalPacket packet)
         {
             _incoming.Enqueue(packet);
         }
 
-        /// <summary>Queues data to be sent to the local server.</summary>
+        /// <summary>
+        /// Queues data to be sent to the local server.
+        /// </summary>
         internal void SendToServer(byte channelId, ArraySegment<byte> segment)
         {
             if (GetLocalConnectionState() != LocalConnectionState.Started) return;

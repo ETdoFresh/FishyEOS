@@ -19,7 +19,7 @@ namespace FishNet.Plugins.FishyEOS.Util
     ///   yield return auth.coroutine;
     ///   Debug.Log(auth.loginCallbackInfo.ResultCode);
     /// </summary>
-    public class Auth
+    internal class Auth
     {
         public LoginOptions loginOptions;
         public LoginCallbackInfo? loginCallbackInfo;

@@ -3,13 +3,15 @@ using Epic.OnlineServices.P2P;
 
 namespace FishNet.Transporting.FishyEOSPlugin
 {
-    /// <summary>A struct that contains information about connection between two peers.</summary>
+    /// <summary>
+    /// A struct that contains information about connection between two peers.
+    /// </summary>
     public struct Connection
     {
-        public int Id;
-        public ProductUserId LocalUserId;
-        public ProductUserId RemoteUserId;
-        public SocketId? SocketId;
+        public int Id { get; }
+        public ProductUserId LocalUserId { get; }
+        public ProductUserId RemoteUserId { get; }
+        public SocketId? SocketId { get; }
 
         public Connection(int connectionId, ProductUserId localUserId, ProductUserId remoteUserId, SocketId? socketId)
         {

@@ -60,7 +60,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
         public AuthConnectData AuthConnectData => authConnectData;
 
         /// <summary>Name of EOS Socket. Must be the same on all clients and server.</summary>
-        public string SocketName => socketName;
+        public string SocketName { get => socketName; set => socketName = value; }
 
         /// <summary>Product User Id of Local EOS Connection</summary>
         public string LocalProductUserId => EOS.GetPlatformInterface().GetConnectInterface().GetLoggedInUserByIndex(0).ToString();

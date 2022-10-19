@@ -13,7 +13,7 @@ namespace FishNet.Plugins.FishyEOS.Util
     /// <summary>
     /// Logs into EOS Connect using coroutines.
     /// </summary>
-    public class Connect
+    internal class Connect
     {
         public LoginOptions loginOptions;
         public LoginCallbackInfo? loginCallbackInfo;
