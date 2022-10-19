@@ -1,39 +1,38 @@
-# !!Still under development! Currently in Pre-Production!!
-But posting it here in case you want to help try it out and help me test. :smile:  
-If there are issues you want to report, let me know either here in [Issues](https://github.com/ETdoFresh/FishyEOS/issues).  
-Or ask me [ETdoFresh] in [FirstGearGames Discord](https://discord.gg/Ta9HgDh4Hj).
-
 # FishyEOS
 An Epic Online Services (EOS) implementation for Fish-Networking.
 
 Thank you [ETdoFresh](https://github.com/sponsors/etdofresh) for your support.
 
+If you have further questions, come find us in the [FirstGearGames Discord](https://discord.gg/Ta9HgDh4Hj)!
+
 
 ## Dependencies
 
 1. Fish-Networking https://github.com/FirstGearGames/FishNet
-2. [Epic Online Services Plugin for Unity](https://github.com/PlayEveryWare/eos_plugin_for_unity_upm) FishyEOS relies on PlayEveryWare's EOS Plugin for Unity to communicate with the [EOS API](https://dev.epicgames.com/docs/api-ref/interfaces).  
-    a. [Configuring the Plugin in the EOS Plugin for Unity Readme](https://github.com/PlayEveryWare/eos_plugin_for_unity#configuring-the-plugin) are useful directions if you need to setup the plugin in your project.
+2. EOS-SDK-Unity https://github.com/ETdoFresh/EOS-SDK-Unity
 
 
 ## Installation
 
-### As a git Unity Package
+### Unity Package (git url)
 
 1. Open Unity Package Manager. **Unity > Window > Package Manager**
 2. Add a package from git URL. **Package Manager > + > Add package from git URL...**
 3. Enter this url: `https://github.com/ETdoFresh/FishyEOS.git?path=/FishNet/Plugins/FishyEOS`
 
-### As a local Unity Package
+### Direct Download (Assets Folder)
 
-You are not required to use git to download the package. Alternatively, you can download this repository to your **Assets** folder or **Packages** folder. If following this method, it is recommended to download to `{ProjectDirectory}\Packages\com.etdofresh.fishyeos`.
+After installing FishNet, download this repository directly to your **Assets** folder.
+
+### Direct Download (Packages Folder)
+
+Copy the **FishNet/Plugins/FishyEOS** folder to your **Packages** folder.
 
 
 ## Setting Up
 
-1. Add an EOSManager Component somewhere in your scene. Probably best on the **NetworkManager** GameObject.
-2. Add FishyEOS Transport component to **NetworkManager** GameObject. 
-3. Set transport varaible on the **TransportManager** Component to FishyEOS.
+1. Add FishyEOS Transport component to **NetworkManager** GameObject. 
+2. Set transport variable on the **TransportManager** Component to FishyEOS.
 
 ### As a Server
 1. Specify the EOS SocketName which you would like to listen from.  
@@ -49,7 +48,7 @@ You are not required to use git to download the package. Alternatively, you can 
 3. Start Client as normal.  
    `NetworkManager.ClientManager.StartConnection()`
 
-### As a Host
+### As a Host (aka Server + Client)
 1. Follow steps from [As a Server](#as-a-server).
 2. Start Client as normal.  
    `NetworkManager.ClientManager.StartConnection()`  
@@ -57,3 +56,8 @@ You are not required to use git to download the package. Alternatively, you can 
 
 ### Testing Two Builds Locally
 EOS has limitations which prevent you from connecting to yourself using the same ID. To do so, you must have two Epic Connect Product User IDs. You can use the same device to log into both if they are different sign in providers (I often use Developer and DeviceCode).
+
+### Supported Platforms
+Currently, this package has been tested on Windows and Mac. It should work on Linux, but has not been tested.
+
+However, with a little modification, it should be able to support all systems listed [here](https://dev.epicgames.com/docs/game-services/platforms#platform-specific-documentation).
