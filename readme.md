@@ -80,3 +80,4 @@ As of **PlayEveryWare/eos_plugin_for_unity@2.1.5**. Android, IOS, and MacOS supp
    2. These functions detect if you are on windows and calls platform specific initialization function.
 3. If you have your EOS configured, you will have a config file located in **Assets/StreamingAssets/EOS/EpicOnlineServicesConfig.json**
    1. Copy **Assets/StreamingAssets/EOS/EpicOnlineServicesConfig.json** to **Assets/StreamingAssets/EOS/eos_android_config.json**
+4. If you are trying to use MacOS preview on M1, here's how I got it to work: https://github.com/PlayEveryWare/eos_plugin_for_unity/issues/141#issuecomment-1285576199 
