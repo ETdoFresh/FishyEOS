@@ -60,7 +60,7 @@ Copy the **FishNet/Plugins/FishyEOS** folder to your **Packages** folder.
 EOS has limitations which prevent you from connecting to yourself using the same ID. To do so, you must have two Epic Connect Product User IDs. You can use the same device to log into both if they are different sign in providers (I often use Developer and DeviceCode).
 
 ### Supported Platforms
-FishyEOS relies on the [PlayEveryWare/eos_plugin_for_unity](https://github.com/PlayEveryWare/eos_plugin_for_unity) plugin to function. The code provided in this repository only uses the calls from this plugin to function. Please refer to the plugin's documentation for [supported platforms](https://github.com/PlayEveryWare/eos_plugin_for_unity). 
+FishyEOS relies on the [PlayEveryWare/eos_plugin_for_unity](https://github.com/PlayEveryWare/eos_plugin_for_unity) plugin to function. The code provided in this repository only uses the calls from this plugin to function. Please refer to the plugin's documentation for [supported platforms](https://github.com/PlayEveryWare/eos_plugin_for_unity#supported-platforms). 
 
 #### Non-Windows Support
 
