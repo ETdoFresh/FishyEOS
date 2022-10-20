@@ -10,7 +10,9 @@ If you have further questions, come find us in the [FirstGearGames Discord](http
 
 1. Fish-Networking https://github.com/FirstGearGames/FishNet
 2. PlayEveryWare/eos_plugin_for_unity https://github.com/PlayEveryWare/eos_plugin_for_unity
-   1. Copy **Assets/Plugins** from repository to your project's **Assets/Plugins** folder. 
+   1. Copy **Assets/Plugins** from repository to your project's **Assets/Plugins** folder.
+   2. Requires Unity 2020.1.11f1 or newer.
+   3. Requires Unity Package: `com.unity.editorcoroutines`
    2. [Configure the plugin](https://github.com/PlayEveryWare/eos_plugin_for_unity#steps) with your Epic Online Services project information.
 
 
@@ -66,10 +68,15 @@ FishyEOS relies on the [PlayEveryWare/eos_plugin_for_unity](https://github.com/P
 
 As of **PlayEveryWare/eos_plugin_for_unity@2.1.5**. Android, IOS, and MacOS support is in preview. However, I had to make some changes to the plugin to get it to work on these preview platforms. Here are those changes:
 
-1. In **Edit > Project Settings > Player Settings > Other Settings > Script Define Symbols**
+1. For all non-windows platforms, set the following **Edit > Project Settings > Player Settings > Other Settings**
    1. Add `EOS_PREVIEW_PLATFORM` to the list.
+   2. Press the **Apply** button.
+2. For Android specifically, also set the following **Edit > Project Settings > Player Settings**
+   1. Other Settings > Identification > Minimum API Level = 23 or higher
+   2. Publishing Settings > Uncheck Custom Main Gradle Template
+      1. If prompter to update gradeTemplate.properties, click **Yes**. 
 2. Do not add **EOSManager** to your scene.
    1. Instead only rely on FishyEOS provided `EOS.GetManager()` and `EOS.GetPlatformInterface()`.
    2. These functions detect if you are on windows and calls platform specific initialization function.
 3. If you have your EOS configured, you will have a config file located in **Assets/StreamingAssets/EOS/EpicOnlineServicesConfig.json**
-   1. Copy **Assets/StreaingAssets/EOS/EpicOnlineServicesConfig.json** to **Assets/StreamingAssets/EOS/eos_android_config.json**
+   1. Copy **Assets/StreamingAssets/EOS/EpicOnlineServicesConfig.json** to **Assets/StreamingAssets/EOS/eos_android_config.json**
