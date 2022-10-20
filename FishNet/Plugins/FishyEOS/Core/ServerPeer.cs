@@ -6,8 +6,8 @@ using Epic.OnlineServices;
 using Epic.OnlineServices.Connect;
 using Epic.OnlineServices.P2P;
 using Epic.OnlineServices.Platform;
-using Epic.OnlineServices.Unity;
 using FishNet.Managing.Logging;
+using FishNet.Plugins.FishyEOS.Util;
 using UnityEngine;
 
 namespace FishNet.Transporting.FishyEOSPlugin

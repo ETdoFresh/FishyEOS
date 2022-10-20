@@ -9,7 +9,9 @@ If you have further questions, come find us in the [FirstGearGames Discord](http
 ## Dependencies
 
 1. Fish-Networking https://github.com/FirstGearGames/FishNet
-2. EOS-SDK-Unity https://github.com/ETdoFresh/EOS-SDK-Unity
+2. PlayEveryWare/eos_plugin_for_unity https://github.com/PlayEveryWare/eos_plugin_for_unity
+   1. Copy **Assets/Plugins** from repository to your project's **Assets/Plugins** folder. 
+   2. [Configure the plugin](https://github.com/PlayEveryWare/eos_plugin_for_unity#steps) with your Epic Online Services project information.
 
 
 ## Installation
@@ -58,6 +60,16 @@ Copy the **FishNet/Plugins/FishyEOS** folder to your **Packages** folder.
 EOS has limitations which prevent you from connecting to yourself using the same ID. To do so, you must have two Epic Connect Product User IDs. You can use the same device to log into both if they are different sign in providers (I often use Developer and DeviceCode).
 
 ### Supported Platforms
-Currently, this package has been tested on Windows and Mac. It should work on Linux, but has not been tested.
+FishyEOS relies on the [PlayEveryWare/eos_plugin_for_unity](https://github.com/PlayEveryWare/eos_plugin_for_unity) plugin to function. The code provided in this repository only uses the calls from this plugin to function. Please refer to the plugin's documentation for [supported platforms](https://github.com/PlayEveryWare/eos_plugin_for_unity). 
 
-However, with a little modification, it should be able to support all systems listed [here](https://dev.epicgames.com/docs/game-services/platforms#platform-specific-documentation).
+#### Non-Windows Support
+
+As of **PlayEveryWare/eos_plugin_for_unity@2.1.5**. Android, IOS, and MacOS support is in preview. However, I had to make some changes to the plugin to get it to work on these preview platforms. Here are those changes:
+
+1. In **Edit > Project Settings > Player Settings > Other Settings > Script Define Symbols**
+   1. Add `EOS_PREVIEW_PLATFORM` to the list.
+2. Do not add **EOSManager** to your scene.
+   1. Instead only rely on FishyEOS provided `EOS.GetManager()` and `EOS.GetPlatformInterface()`.
+   2. These functions detect if you are on windows and calls platform specific initialization function.
+3. If you have your EOS configured, you will have a config file located in **Assets/StreamingAssets/EOS/EpicOnlineServicesConfig.json**
+   1. Copy **Assets/StreaingAssets/EOS/EpicOnlineServicesConfig.json** to **Assets/StreamingAssets/EOS/eos_android_config.json**

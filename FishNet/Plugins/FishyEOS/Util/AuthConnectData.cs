@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using Epic.OnlineServices;
 using Epic.OnlineServices.Auth;
-using Epic.OnlineServices.Unity;
 using UnityEngine;
 using LoginCallbackInfo = Epic.OnlineServices.Connect.LoginCallbackInfo;
 
@@ -24,9 +23,7 @@ namespace FishNet.Plugins.FishyEOS.Util
 
         public void Connect()
         {
-            EOS.GetPlatformInterface();
-            var eos = UnityEngine.Object.FindObjectOfType<EOS>();
-            coroutine = eos.StartCoroutine(ConnectCoroutine());
+            coroutine = EOS.GetManager().StartCoroutine(ConnectCoroutine());
         }
 
         public IEnumerator ConnectCoroutine()
@@ -47,6 +44,11 @@ namespace FishNet.Plugins.FishyEOS.Util
                     }
                     var connectAgain = Plugins.FishyEOS.Util.Connect.LoginWithDeviceToken(id);
                     yield return connectAgain.coroutine;
+                    if (connectAgain.loginCallbackInfo?.ResultCode != Result.NotFound)
+                    {
+                        Debug.LogError("[Connect] Failed to login using new ID");
+                        yield break;
+                    }
                     if (connectAgain.loginCallbackInfo?.ResultCode != Result.Success)
                     {
                         Debug.LogError(

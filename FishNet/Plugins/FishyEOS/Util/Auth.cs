@@ -1,7 +1,6 @@
 using System.Collections;
 using Epic.OnlineServices;
 using Epic.OnlineServices.Auth;
-using Epic.OnlineServices.Unity;
 using UnityEngine;
 using LoginCallbackInfo = Epic.OnlineServices.Auth.LoginCallbackInfo;
 
@@ -48,8 +47,7 @@ namespace FishNet.Plugins.FishyEOS.Util
             EOS.GetPlatformInterface().GetAuthInterface().Login(ref auth.loginOptions, null,
                 delegate(ref LoginCallbackInfo callbackInfo) { auth.loginCallbackInfo = callbackInfo; });
 
-            var eosManager = UnityEngine.Object.FindObjectOfType<EOS>();
-            auth.coroutine = eosManager.StartCoroutine(auth.StartLoginWithLoginOptionsCoroutine());
+            auth.coroutine = EOS.GetManager().StartCoroutine(auth.StartLoginWithLoginOptionsCoroutine());
 
             return auth;
         }

@@ -1,6 +1,5 @@
 ﻿using System;
 using Epic.OnlineServices.P2P;
-using Epic.OnlineServices.Unity;
 using FishNet.Managing;
 using FishNet.Managing.Logging;
 using FishNet.Plugins.FishyEOS.Util;

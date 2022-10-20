@@ -2,7 +2,6 @@ using System.Collections;
 using Epic.OnlineServices;
 using Epic.OnlineServices.Auth;
 using Epic.OnlineServices.Connect;
-using Epic.OnlineServices.Unity;
 using UnityEngine;
 using Credentials = Epic.OnlineServices.Connect.Credentials;
 using LoginCallbackInfo = Epic.OnlineServices.Connect.LoginCallbackInfo;
@@ -41,9 +40,8 @@ namespace FishNet.Plugins.FishyEOS.Util
             };
             EOS.GetPlatformInterface().GetConnectInterface().Login(ref connect.loginOptions, null,
                 delegate(ref LoginCallbackInfo loginCallbackInfo) { connect.loginCallbackInfo = loginCallbackInfo; });
-
-            var eosManager = UnityEngine.Object.FindObjectOfType<EOS>();
-            connect.coroutine = eosManager.StartCoroutine(connect.WaitForLoginCallbackInfo());
+            
+            connect.coroutine = EOS.GetManager().StartCoroutine(connect.WaitForLoginCallbackInfo());
             return connect;
         }
 
@@ -64,9 +62,8 @@ namespace FishNet.Plugins.FishyEOS.Util
             };
             EOS.GetPlatformInterface().GetConnectInterface().Login(ref connect.loginOptions, null,
                 delegate(ref LoginCallbackInfo loginCallbackInfo) { connect.loginCallbackInfo = loginCallbackInfo; });
-
-            var eosManager = UnityEngine.Object.FindObjectOfType<EOS>();
-            connect.coroutine = eosManager.StartCoroutine(connect.WaitForLoginCallbackInfo());
+            
+            connect.coroutine = EOS.GetManager().StartCoroutine(connect.WaitForLoginCallbackInfo());
             return connect;
         }
 
@@ -82,9 +79,8 @@ namespace FishNet.Plugins.FishyEOS.Util
                 {
                     connect.createUserCallbackInfo = createUserCallbackInfo;
                 });
-
-            var eosManager = UnityEngine.Object.FindObjectOfType<EOS>();
-            connect.coroutine = eosManager.StartCoroutine(connect.WaitForCreateUserCallbackInfo());
+            
+            connect.coroutine = EOS.GetManager().StartCoroutine(connect.WaitForCreateUserCallbackInfo());
             return connect;
         }
 
