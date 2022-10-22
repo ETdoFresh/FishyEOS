@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using FishNet.Utility.Performance;
+using UnityEngine;
 
 namespace FishNet.Transporting.FishyEOSPlugin
 {
@@ -27,13 +29,32 @@ namespace FishNet.Transporting.FishyEOSPlugin
             
             _server = serverPeer;
             _server.SetClientHostPeer(this);
-
+            
             if (GetLocalConnectionState() != LocalConnectionState.Stopped) return false;
-            if (_server.GetLocalConnectionState() != LocalConnectionState.Started) return false;
+            if (_server.GetLocalConnectionState() != LocalConnectionState.Started &&
+                _server.GetLocalConnectionState() != LocalConnectionState.Starting) return false;
 
             SetLocalConnectionState(LocalConnectionState.Starting, false);
-            SetLocalConnectionState(LocalConnectionState.Started, false);
+            _transport.StartCoroutine(StartClientHostOnServerStart());
             return true;
+        }
+
+        /// <summary>
+        /// Waits for server to be started before finishing client connection.
+        /// </summary>
+        private IEnumerator StartClientHostOnServerStart()
+        {
+            var timeout = Time.time + 30f;
+            while (Time.time < timeout)
+            {
+                if (_server.GetLocalConnectionState() == LocalConnectionState.Started)
+                {
+                    SetLocalConnectionState(LocalConnectionState.Started, false);
+                    yield break;
+                }
+                yield return null;
+            }
+            SetLocalConnectionState(LocalConnectionState.Stopped, false);
         }
 
         /// <summary>

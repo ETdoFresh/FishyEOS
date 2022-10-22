@@ -3,9 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Epic.OnlineServices;
-using Epic.OnlineServices.Connect;
 using Epic.OnlineServices.P2P;
-using Epic.OnlineServices.Platform;
 using FishNet.Managing.Logging;
 using FishNet.Plugins.FishyEOS.Util;
 using UnityEngine;
@@ -69,23 +67,6 @@ namespace FishNet.Transporting.FishyEOSPlugin
 
         #endregion
 
-        #region Cached Properties.
-
-        private PlatformInterface _eosPlatformInterface;
-        private ConnectInterface _eosConnectInterface;
-        private P2PInterface _eosP2PInterface;
-
-        private PlatformInterface PlatformInterface =>
-            _eosPlatformInterface ?? (_eosPlatformInterface = EOS.GetPlatformInterface());
-
-        private ConnectInterface ConnectInterface =>
-            _eosConnectInterface ?? (_eosConnectInterface = PlatformInterface?.GetConnectInterface());
-
-        private P2PInterface P2PInterface =>
-            _eosP2PInterface ?? (_eosP2PInterface = PlatformInterface?.GetP2PInterface());
-
-        #endregion
-
         /// <summary>
         /// Starts the server.
         /// </summary>
@@ -101,32 +82,33 @@ namespace FishNet.Transporting.FishyEOSPlugin
         /// </summary>
         private IEnumerator AuthenticateAndStartListeningForConnections()
         {
-            // Attempt to Authenticate with EOS Connect...
-            _transport.AuthConnectData.Connect();
-            yield return _transport.AuthConnectData.coroutine;
-            if (_transport.AuthConnectData.loginCallbackInfo?.ResultCode != Result.Success)
+            if (_transport.AutoAuthenticate)
             {
-                if (_transport.NetworkManager.CanLog(LoggingType.Error))
-                    Debug.LogError(
-                        $"[ServerPeer] Failed to authenticate with EOS Connect. {_transport.AuthConnectData.loginCallbackInfo?.ResultCode}");
-                base.SetLocalConnectionState(LocalConnectionState.Stopped, true);
-                yield break;
+                yield return _transport.AuthConnectData.Connect(out var authDataLogin);
+                if (authDataLogin.loginCallbackInfo?.ResultCode != Result.Success)
+                {
+                    if (_transport.NetworkManager.CanLog(LoggingType.Error))
+                        Debug.LogError(
+                            $"[ServerPeer] Failed to authenticate with EOS Connect. {authDataLogin.loginCallbackInfo?.ResultCode}");
+                    base.SetLocalConnectionState(LocalConnectionState.Stopped, true);
+                    yield break;
+                }
             }
 
             if (_transport.NetworkManager.CanLog(LoggingType.Common))
-                Debug.Log($"[ServerPeer] Authenticated with EOS Connect. {ConnectInterface.GetLoggedInUserByIndex(0)}");
+                Debug.Log($"[ServerPeer] Authenticated with EOS Connect. {EOS.LocalProductUserId}");
 
             // Attempt to Start Listening for Peer Connections...
             try
             {
-                _localUserId = ConnectInterface.GetLoggedInUserByIndex(0);
+                _localUserId = EOS.LocalProductUserId;
                 _socketId = new SocketId { SocketName = _transport.SocketName };
                 var addNotifyPeerConnectionRequestOptions = new AddNotifyPeerConnectionRequestOptions
                 {
                     SocketId = _socketId,
                     LocalUserId = _localUserId,
                 };
-                _acceptPeerConnectionsEventHandle = P2PInterface.AddNotifyPeerConnectionRequest(
+                _acceptPeerConnectionsEventHandle = EOS.GetCachedP2PInterface().AddNotifyPeerConnectionRequest(
                     ref addNotifyPeerConnectionRequestOptions, null, OnPeerConnectionRequest);
 
                 if (_transport.NetworkManager.CanLog(LoggingType.Common))
@@ -158,7 +140,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 SocketId = data.SocketId,
                 LocalUserId = data.LocalUserId,
             };
-            var connectionEstablishedHandle = P2PInterface.AddNotifyPeerConnectionEstablished(
+            var connectionEstablishedHandle = EOS.GetCachedP2PInterface().AddNotifyPeerConnectionEstablished(
                 ref addNotifyPeerConnectionEstablishedOptions, clientConnection, OnPeerConnectionEstablished);
             _establishPeerConnectionEventHandles.Add(clientConnection, connectionEstablishedHandle);
 
@@ -168,7 +150,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 RemoteUserId = data.RemoteUserId,
                 SocketId = data.SocketId,
             };
-            var acceptConnectionResult = P2PInterface.AcceptConnection(ref acceptConnectionOptions);
+            var acceptConnectionResult = EOS.GetCachedP2PInterface().AcceptConnection(ref acceptConnectionOptions);
 
             if (acceptConnectionResult != Result.Success)
             {
@@ -187,7 +169,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
             var clientConnection = (Connection)data.ClientData;
             if (_establishPeerConnectionEventHandles.TryGetValue(clientConnection, out var notificationId))
             {
-                P2PInterface.RemoveNotifyPeerConnectionEstablished(notificationId);
+                EOS.GetCachedP2PInterface().RemoveNotifyPeerConnectionEstablished(notificationId);
                 _establishPeerConnectionEventHandles.Remove(clientConnection);
             }
 
@@ -197,8 +179,8 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 LocalUserId = clientConnection.LocalUserId,
             };
             var closePeerConnectionHandle =
-                P2PInterface.AddNotifyPeerConnectionClosed(ref addNotifyPeerConnectionClosedOptions, clientConnection,
-                    OnPeerConnectionClosed);
+                EOS.GetCachedP2PInterface().AddNotifyPeerConnectionClosed(ref addNotifyPeerConnectionClosedOptions,
+                    clientConnection, OnPeerConnectionClosed);
             _closePeerConnectionEventHandles.Add(clientConnection, closePeerConnectionHandle);
 
             _transport.HandleRemoteConnectionState(new RemoteConnectionStateArgs(RemoteConnectionState.Started,
@@ -218,7 +200,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
 
             if (_closePeerConnectionEventHandles.TryGetValue(clientConnection, out var notificationId))
             {
-                P2PInterface.RemoveNotifyPeerConnectionClosed(notificationId);
+                EOS.GetCachedP2PInterface().RemoveNotifyPeerConnectionClosed(notificationId);
                 _closePeerConnectionEventHandles.Remove(clientConnection);
             }
 
@@ -240,31 +222,24 @@ namespace FishNet.Transporting.FishyEOSPlugin
 
             base.SetLocalConnectionState(LocalConnectionState.Stopping, true);
 
-            if (P2PInterface == null)
-            {
-                if (_transport.NetworkManager.CanLog(LoggingType.Error))
-                    Debug.LogError($"[ServerPeer] Failed to stop connections. EOSP2PInterface is null.");
-                base.SetLocalConnectionState(LocalConnectionState.Stopped, true);
-                return false;
-            }
-
             try
             {
                 _clients.Clear();
                 _clientHostIncoming.Clear();
-                _clientHost.StopConnection();
+                _clientHost?.StopConnection();
 
                 foreach (var entry in _closePeerConnectionEventHandles)
-                    P2PInterface.RemoveNotifyPeerConnectionClosed(entry.Value);
+                    EOS.GetCachedP2PInterface()?.RemoveNotifyPeerConnectionClosed(entry.Value);
                 _closePeerConnectionEventHandles.Clear();
 
                 foreach (var entry in _establishPeerConnectionEventHandles)
-                    P2PInterface.RemoveNotifyPeerConnectionEstablished(entry.Value);
+                    EOS.GetCachedP2PInterface()?.RemoveNotifyPeerConnectionEstablished(entry.Value);
                 _establishPeerConnectionEventHandles.Clear();
 
                 if (_acceptPeerConnectionsEventHandle.HasValue)
                 {
-                    P2PInterface.RemoveNotifyPeerConnectionRequest(_acceptPeerConnectionsEventHandle.Value);
+                    EOS.GetCachedP2PInterface()?
+                        .RemoveNotifyPeerConnectionRequest(_acceptPeerConnectionsEventHandle.Value);
                     _acceptPeerConnectionsEventHandle = null;
                 }
 
@@ -273,7 +248,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
                     SocketId = _socketId,
                     LocalUserId = _localUserId,
                 };
-                P2PInterface.CloseConnections(ref closeConnectionOptions);
+                EOS.GetCachedP2PInterface()?.CloseConnections(ref closeConnectionOptions);
             }
             catch (Exception e)
             {
@@ -309,7 +284,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 LocalUserId = clientConnection.LocalUserId,
                 RemoteUserId = clientConnection.RemoteUserId
             };
-            P2PInterface.CloseConnection(ref closeConnectionOptions);
+            EOS.GetCachedP2PInterface().CloseConnection(ref closeConnectionOptions);
             return true;
         }
 

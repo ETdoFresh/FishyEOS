@@ -28,21 +28,6 @@ namespace FishNet.Transporting.FishyEOSPlugin
 
         #endregion
 
-        #region Cached EOS Properties.
-
-        /// <summary>
-        /// Cached EOS P2P Interface.
-        /// </summary>
-        private P2PInterface _eosP2PInterface;
-
-        /// <summary>
-        /// Attempt to Get or Cache EOS P2P Interface.
-        /// </summary>
-        private P2PInterface P2PInterface =>
-            _eosP2PInterface ?? (_eosP2PInterface = EOS.GetPlatformInterface()?.GetP2PInterface());
-
-        #endregion
-
         /// <summary>
         /// Returns the current ConnectionState.
         /// </summary>
@@ -64,9 +49,11 @@ namespace FishNet.Transporting.FishyEOSPlugin
             _connectionState = connectionState;
 
             if (server)
-                _transport.HandleServerConnectionState(new ServerConnectionStateArgs(connectionState, _transport.Index));
+                _transport.HandleServerConnectionState(new ServerConnectionStateArgs(connectionState,
+                    _transport.Index));
             else
-                _transport.HandleClientConnectionState(new ClientConnectionStateArgs(connectionState, _transport.Index));
+                _transport.HandleClientConnectionState(new ClientConnectionStateArgs(connectionState,
+                    _transport.Index));
         }
 
         /// <summary>
@@ -113,7 +100,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 Reliability = reliability,
                 AllowDelayedDelivery = allowDelayedDelivery
             };
-            var result = P2PInterface.SendPacket(ref sendPacketOptions);
+            var result = EOS.GetCachedP2PInterface().SendPacket(ref sendPacketOptions);
             if (result != Result.Success)
                 Debug.LogWarning(
                     $"Failed to send packet to {remoteUserId} with size {segment.Count} with error {result}");
@@ -135,7 +122,8 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 LocalUserId = localUserId,
             };
             var getPacketSizeResult =
-                P2PInterface.GetNextReceivedPacketSize(ref getNextReceivedPacketSizeOptions, out var packetSize);
+                EOS.GetCachedP2PInterface()
+                    .GetNextReceivedPacketSize(ref getNextReceivedPacketSizeOptions, out var packetSize);
             if (getPacketSizeResult == Result.NotFound)
             {
                 return false; // this is fine, just no packets to read
@@ -155,8 +143,8 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 MaxDataSizeBytes = packetSize,
             };
             data = new ArraySegment<byte>(new byte[packetSize]);
-            var receivePacketResult = P2PInterface.ReceivePacket(ref receivePacketOptions, out remoteUserId, out _,
-                out var channelByte, data, out _);
+            var receivePacketResult = EOS.GetCachedP2PInterface().ReceivePacket(ref receivePacketOptions,
+                out remoteUserId, out _, out var channelByte, data, out _);
             channel = (Channel)channelByte;
             if (receivePacketResult != Result.Success)
             {
@@ -176,7 +164,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
         {
             var getPacketQueueInfoOptions = new GetPacketQueueInfoOptions();
             var getPacketQueueResult =
-                P2PInterface.GetPacketQueueInfo(ref getPacketQueueInfoOptions, out var packetQueueInfo);
+                EOS.GetCachedP2PInterface().GetPacketQueueInfo(ref getPacketQueueInfoOptions, out var packetQueueInfo);
             if (getPacketQueueResult != Result.Success)
             {
                 if (_transport.NetworkManager.CanLog(LoggingType.Error))

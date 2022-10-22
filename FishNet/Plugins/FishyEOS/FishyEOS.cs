@@ -12,59 +12,95 @@ namespace FishNet.Transporting.FishyEOSPlugin
     {
         #region Serialized.
 
-        /// <summary>Maximum number of players which may be connected at once.</summary>
+        /// <summary>
+        /// Maximum number of players which may be connected at once.
+        /// </summary>
         [Tooltip("Maximum number of players which may be connected at once.")]
         [Range(1, 9999)]
         [SerializeField]
         private int _maximumClients = 4095;
 
-        /// <summary>Socket ID [Must be the same on all clients and server].</summary>
+        /// <summary>
+        /// Socket ID [Must be the same on all clients and server].
+        /// </summary>
         [Header("EOS")]
         [Tooltip("Socket ID [Must be the same on all clients and server].")]
         [SerializeField] private string socketName = "FishyEOS";
 
-        /// <summary>Server Product User ID. Must be set for remote clients.</summary>
+        /// <summary>
+        /// Server Product User ID. Must be set for remote clients.
+        /// </summary>
         [Tooltip("Server Product User ID. Must be set for remote clients.")]
         [SerializeField] private string remoteServerProductUserId;
 
-        /// <summary>Authentication Data for EOS Connect</summary>
+        /// <summary>
+        /// Automatically Authenticate/Login to EOS Connect when starting server or client.
+        /// </summary>
+        [Tooltip("Automatically Authenticate/Login to EOS Connect when starting server or client.")]
+        [SerializeField] private bool autoAuthenticate = true;
+        
+        /// <summary>
+        /// Authentication Data for EOS Connect.
+        /// </summary>
         [Tooltip("Auth Connect Data. Must be unique for all clients and server. [Host only needs 1 unique value.]")]
-        [SerializeField] private AuthConnectData authConnectData = new AuthConnectData();
+        [SerializeField] private AuthData authConnectData = new AuthData();
 
         #endregion
 
         #region Private.
 
-        /// <summary>Server peer and handler</summary>
+        /// <summary>
+        /// Server peer and handler
+        /// </summary>
         private ServerPeer _server = new ServerPeer();
 
-        /// <summary>Client peer and handler</summary>
+        /// <summary>
+        /// Client peer and handler
+        /// </summary>
         private ClientPeer _client = new ClientPeer();
 
-        /// <summary>Client Host peer and handler</summary>
+        /// <summary>
+        /// Client Host peer and handler
+        /// </summary>
         private ClientHostPeer _clientHost = new ClientHostPeer();
 
         #endregion
 
         #region Constants.
 
-        /// <summary>Id to use for client when acting as host.</summary>
+        /// <summary>
+        /// Id to use for client when acting as host.
+        /// </summary>
         internal const int CLIENT_HOST_ID = short.MaxValue;
 
         #endregion
 
         #region Properties.
 
-        /// <summary> Authentication Data for EOS Connect</summary>
-        public AuthConnectData AuthConnectData => authConnectData;
+        /// <summary>
+        /// Automatically Authenticate/Login to EOS Connect when starting server or client.
+        /// </summary>
+        public bool AutoAuthenticate => autoAuthenticate;
+        
+        /// <summary>
+        /// Authentication Data for EOS Connect
+        /// </summary>
+        public AuthData AuthConnectData => authConnectData;
 
-        /// <summary>Name of EOS Socket. Must be the same on all clients and server.</summary>
+        /// <summary>
+        /// Name of EOS Socket. Must be the same on all clients and server.
+        /// </summary>
         public string SocketName { get => socketName; set => socketName = value; }
 
-        /// <summary>Product User Id of Local EOS Connection</summary>
-        public string LocalProductUserId => EOS.GetPlatformInterface().GetConnectInterface().GetLoggedInUserByIndex(0).ToString();
+        /// <summary>
+        /// Product User Id of Local EOS Connection
+        /// </summary>
+        public string LocalProductUserId =>
+            EOS.GetPlatformInterface().GetConnectInterface().GetLoggedInUserByIndex(0).ToString();
 
-        /// <summary>Product User Id of Remote Server EOS Connection</summary>
+        /// <summary>
+        /// Product User Id of Remote Server EOS Connection
+        /// </summary>
         public string RemoteProductUserId
         {
             get => remoteServerProductUserId;
@@ -93,7 +129,9 @@ namespace FishNet.Transporting.FishyEOSPlugin
         #region ConnectionStates.
 
         // -----------------------------------
-        /// <summary>Gets the EOS Connect Peer Id of a remote connection Id.</summary>
+        /// <summary>
+        /// Gets the EOS Connect Peer Id of a remote connection Id.
+        /// </summary>
         /// <param name="connectionId"></param>
         /// <returns></returns>
         public override string GetConnectionAddress(int connectionId)
@@ -101,16 +139,24 @@ namespace FishNet.Transporting.FishyEOSPlugin
             return _server.GetConnectionAddress(connectionId);
         }
 
-        /// <summary>Called when a connection state changes for the local client.</summary>
+        /// <summary>
+        /// Called when a connection state changes for the local client.
+        /// </summary>
         public override event Action<ClientConnectionStateArgs> OnClientConnectionState;
 
-        /// <summary>Called when a connection state changes for the local server.</summary>
+        /// <summary>
+        /// Called when a connection state changes for the local server.
+        /// </summary>
         public override event Action<ServerConnectionStateArgs> OnServerConnectionState;
 
-        /// <summary>Called when a connection state changes for a remote client.</summary>
+        /// <summary>
+        /// Called when a connection state changes for a remote client.
+        /// </summary>
         public override event Action<RemoteConnectionStateArgs> OnRemoteConnectionState;
 
-        /// <summary>Gets the current local ConnectionState.</summary>
+        /// <summary>
+        /// Gets the current local ConnectionState.
+        /// </summary>
         /// <param name="server">True if getting ConnectionState for the server.</param>
         public override LocalConnectionState GetConnectionState(bool server)
         {
@@ -120,28 +166,36 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 return _client.GetLocalConnectionState();
         }
 
-        /// <summary>Gets the current ConnectionState of a remote client on the server.</summary>
+        /// <summary>
+        /// Gets the current ConnectionState of a remote client on the server.
+        /// </summary>
         /// <param name="connectionId">ConnectionId to get ConnectionState for.</param>
         public override RemoteConnectionState GetConnectionState(int connectionId)
         {
             return _server.GetConnectionState(connectionId);
         }
 
-        /// <summary>Handles a ConnectionStateArgs for the local client.</summary>
+        /// <summary>
+        /// Handles a ConnectionStateArgs for the local client.
+        /// </summary>
         /// <param name="connectionStateArgs"></param>
         public override void HandleClientConnectionState(ClientConnectionStateArgs connectionStateArgs)
         {
             OnClientConnectionState?.Invoke(connectionStateArgs);
         }
 
-        /// <summary>Handles a ConnectionStateArgs for the local server.</summary>
+        /// <summary>
+        /// Handles a ConnectionStateArgs for the local server.
+        /// </summary>
         /// <param name="connectionStateArgs"></param>
         public override void HandleServerConnectionState(ServerConnectionStateArgs connectionStateArgs)
         {
             OnServerConnectionState?.Invoke(connectionStateArgs);
         }
 
-        /// <summary>Handles a ConnectionStateArgs for a remote client.</summary>
+        /// <summary>
+        /// Handles a ConnectionStateArgs for a remote client.
+        /// </summary>
         /// <param name="connectionStateArgs"></param>
         public override void HandleRemoteConnectionState(RemoteConnectionStateArgs connectionStateArgs)
         {
@@ -152,7 +206,9 @@ namespace FishNet.Transporting.FishyEOSPlugin
 
         #region Iterating.
 
-        /// <summary>Processes data received by the socket.</summary>
+        /// <summary>
+        /// Processes data received by the socket.
+        /// </summary>
         /// <param name="server">True to process data received on the server.</param>
         public override void IterateIncoming(bool server)
         {
@@ -167,7 +223,9 @@ namespace FishNet.Transporting.FishyEOSPlugin
             }
         }
 
-        /// <summary>Processes data to be sent by the socket.</summary>
+        /// <summary>
+        /// Processes data to be sent by the socket.
+        /// </summary>
         /// <param name="server">True to process data received on the server.</param>
         public override void IterateOutgoing(bool server)
         {
@@ -185,10 +243,14 @@ namespace FishNet.Transporting.FishyEOSPlugin
 
         #region ReceivedData.
 
-        /// <summary>Called when client receives data.</summary>
+        /// <summary>
+        /// Called when client receives data.
+        /// </summary>
         public override event Action<ClientReceivedDataArgs> OnClientReceivedData;
 
-        /// <summary>Handles a ClientReceivedDataArgs.</summary>
+        /// <summary>
+        /// Handles a ClientReceivedDataArgs.
+        /// </summary>
         /// <param name="receivedDataArgs"></param>
         public override void HandleClientReceivedDataArgs(ClientReceivedDataArgs receivedDataArgs)
         {
@@ -198,7 +260,9 @@ namespace FishNet.Transporting.FishyEOSPlugin
         /// <summary>Called when server receives data.</summary>
         public override event Action<ServerReceivedDataArgs> OnServerReceivedData;
 
-        /// <summary>Handles a ClientReceivedDataArgs.</summary>
+        /// <summary>
+        /// Handles a ClientReceivedDataArgs.
+        /// </summary>
         /// <param name="receivedDataArgs"></param>
         public override void HandleServerReceivedDataArgs(ServerReceivedDataArgs receivedDataArgs)
         {
@@ -209,7 +273,9 @@ namespace FishNet.Transporting.FishyEOSPlugin
 
         #region SendingData.
 
-        /// <summary>Sends to the server or all clients.</summary>
+        /// <summary>
+        /// Sends to the server or all clients.
+        /// </summary>
         /// <param name="channelId">Channel to use.</param>
         /// <param name="segment">Data to send.</param>
         public override void SendToServer(byte channelId, ArraySegment<byte> segment)
@@ -218,7 +284,9 @@ namespace FishNet.Transporting.FishyEOSPlugin
             _clientHost.SendToServer(channelId, segment);
         }
 
-        /// <summary>Sends data to a client.</summary>
+        /// <summary>
+        /// Sends data to a client.
+        /// </summary>
         /// <param name="channelId"></param>
         /// <param name="segment"></param>
         /// <param name="connectionId"></param>
@@ -256,19 +324,25 @@ namespace FishNet.Transporting.FishyEOSPlugin
             _server.SetMaximumClients(value);
         }
 
-        /// <summary>EOS Not Used</summary>
+        /// <summary>
+        /// EOS Not Used
+        /// </summary>
         public override void SetClientAddress(string address)
         {
             _ = address;
         }
 
-        /// <summary>EOS Not Used</summary>
+        /// <summary>
+        /// EOS Not Used
+        /// </summary>
         public override void SetServerBindAddress(string address, IPAddressType addressType)
         {
             _ = address;
         }
 
-        /// <summary>EOS Not Used</summary>
+        /// <summary>
+        /// EOS Not Used
+        /// </summary>
         public override void SetPort(ushort port)
         {
             _ = port;
@@ -278,7 +352,9 @@ namespace FishNet.Transporting.FishyEOSPlugin
 
         #region Start and stop.
 
-        /// <summary>Starts the local server or client using configured settings.</summary>
+        /// <summary>
+        /// Starts the local server or client using configured settings.
+        /// </summary>
         /// <param name="server">True to start server.</param>
         public override bool StartConnection(bool server)
         {
@@ -288,7 +364,8 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 return StartClient();
         }
 
-        /// <summary>Stops the local server or client. </summary>
+        /// <summary>
+        /// Stops the local server or client.</summary>
         /// <param name="server">True to stop server.</param>
         public override bool StopConnection(bool server)
         {
@@ -298,7 +375,9 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 return StopClient();
         }
 
-        /// <summary>Stops a remote client from the server, disconnecting the client.</summary>
+        /// <summary>
+        /// Stops a remote client from the server, disconnecting the client.
+        /// </summary>
         /// <param name="connectionId">ConnectionId of the client to disconnect.</param>
         /// <param name="immediately">True to abrutly stop the client socket. The technique used to accomplish immediate disconnects may vary depending on the transport.
         /// When not using immediate disconnects it's recommended to perform disconnects using the ServerManager rather than accessing the transport directly.
@@ -308,7 +387,9 @@ namespace FishNet.Transporting.FishyEOSPlugin
             return StopClient(connectionId, immediately);
         }
 
-        /// <summary>Stops both client and server.</summary>
+        /// <summary>
+        /// Stops both client and server.
+        /// </summary>
         public override void Shutdown()
         {
             //Stops client then server connections.
@@ -318,7 +399,9 @@ namespace FishNet.Transporting.FishyEOSPlugin
 
         #region Privates.
 
-        /// <summary>Starts server.</summary>
+        /// <summary>
+        /// Starts server.
+        /// </summary>
         private bool StartServer()
         {
             if (_server.GetLocalConnectionState() != LocalConnectionState.Stopped)
@@ -343,7 +426,9 @@ namespace FishNet.Transporting.FishyEOSPlugin
             return result;
         }
 
-        /// <summary>Stops server.</summary>
+        /// <summary>
+        /// Stops server.
+        /// </summary>
         private bool StopServer()
         {
             if (_server != null)
@@ -352,7 +437,9 @@ namespace FishNet.Transporting.FishyEOSPlugin
             return false;
         }
 
-        /// <summary>Starts the client.</summary>
+        /// <summary>
+        /// Starts the client.
+        /// </summary>
         /// <param name="address"></param>
         private bool StartClient()
         {
@@ -381,7 +468,9 @@ namespace FishNet.Transporting.FishyEOSPlugin
             return true;
         }
 
-        /// <summary>Stops the client.</summary>
+        /// <summary>
+        /// Stops the client.
+        /// </summary>
         private bool StopClient()
         {
             bool result = false;
@@ -392,7 +481,9 @@ namespace FishNet.Transporting.FishyEOSPlugin
             return result;
         }
 
-        /// <summary>Stops the client.</summary>
+        /// <summary>
+        /// Stops the client.
+        /// </summary>
         private bool StopClient(int connectionId, bool immediately)
         {
             return _server.StopConnection(connectionId);
