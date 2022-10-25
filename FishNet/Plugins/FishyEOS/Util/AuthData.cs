@@ -15,9 +15,9 @@ namespace FishNet.Plugins.FishyEOS.Util
     {
         public LoginCredentialType loginCredentialType = LoginCredentialType.DeviceCode;
         public ExternalCredentialType externalCredentialType = ExternalCredentialType.DeviceidAccessToken;
-        public string id = "FishyEOS";
+        public string id;
         public string token;
-        public string displayName;
+        public string displayName = "FishyEOS";
         public bool automaticallyCreateDeviceId = true;
         public bool automaticallyCreateConnectAccount = true;
         public AuthScopeFlags authScopeFlags = AuthScopeFlags.NoFlags;
