@@ -10,10 +10,11 @@ If you have further questions, come find us in the [FirstGearGames Discord](http
 
 1. Fish-Networking https://github.com/FirstGearGames/FishNet
 2. PlayEveryWare/eos_plugin_for_unity https://github.com/PlayEveryWare/eos_plugin_for_unity
-   1. Copy **Assets/Plugins** from repository to your project's **Assets/Plugins** folder.
-   2. Requires Unity 2020.1.11f1 or newer.
-   3. Requires Unity Package: `com.unity.editorcoroutines`
-   2. [Configure the plugin](https://github.com/PlayEveryWare/eos_plugin_for_unity#steps) with your Epic Online Services project information.
+   1. Use `git clone https://github.com/PlayEveryWare/eos_plugin_for_unity` when downloading **eos_plugin_for_unity**. If you download as zip, you may have errors with the included DLLs.
+   2. Copy **Assets/Plugins** from repository to your project's **Assets/Plugins** folder.
+   3. Requires Unity 2020.1.11f1 or newer.
+   4. Requires Unity Package: `com.unity.editorcoroutines`
+   5. [Configure the plugin](https://github.com/PlayEveryWare/eos_plugin_for_unity#steps) with your Epic Online Services project information.
 
 
 ## Installation
@@ -62,7 +63,7 @@ Copy the **FishNet/Plugins/FishyEOS** folder to your **Packages** folder.
 EOS has limitations which prevent you from connecting to yourself using the same ID. To do so, you must have two Epic Connect Product User IDs. You can use the same device to log into both if they are different sign in providers (I often use Developer and DeviceCode).
 
 ## Supported Platforms
-FishyEOS relies on the [PlayEveryWare/eos_plugin_for_unity](https://github.com/PlayEveryWare/eos_plugin_for_unity) plugin to function. The code provided in this repository only uses the calls from this plugin to function. Please refer to the plugin's documentation for [supported platforms](https://github.com/PlayEveryWare/eos_plugin_for_unity#supported-platforms). 
+FishyEOS relies on the [PlayEveryWare/eos_plugin_for_unity](https://github.com/PlayEveryWare/eos_plugin_for_unity) plugin to function. The code provided in this repository only uses the calls from this plugin to function. Please refer to the plugin's documentation for [supported platforms](https://github.com/PlayEveryWare/eos_plugin_for_unity#supported-platforms).
 
 ### Non-Windows Support
 
@@ -74,7 +75,7 @@ As of **PlayEveryWare/eos_plugin_for_unity@2.1.5**. Android, IOS, and MacOS supp
 2. For Android specifically, also set the following **Edit > Project Settings > Player Settings**
    1. Other Settings > Identification > Minimum API Level = 23 or higher
    2. Publishing Settings > Uncheck Custom Main Gradle Template
-      1. If prompter to update gradeTemplate.properties, click **Yes**. 
+      1. If prompter to update gradeTemplate.properties, click **Yes**.
 2. Do not add **EOSManager** to your scene.
    1. Instead only rely on FishyEOS provided `EOS.GetManager()` and `EOS.GetPlatformInterface()`.
    2. These functions detect if you are on windows and calls platform specific initialization function.

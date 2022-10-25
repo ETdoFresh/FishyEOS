@@ -10,10 +10,11 @@ If you have further questions, come find us in the [FirstGearGames Discord](http
 
 1. Fish-Networking https://github.com/FirstGearGames/FishNet
 2. PlayEveryWare/eos_plugin_for_unity https://github.com/PlayEveryWare/eos_plugin_for_unity
-   1. Copy **Assets/Plugins** from repository to your project's **Assets/Plugins** folder.
-   2. Requires Unity 2020.1.11f1 or newer.
-   3. Requires Unity Package: `com.unity.editorcoroutines`
-   2. [Configure the plugin](https://github.com/PlayEveryWare/eos_plugin_for_unity#steps) with your Epic Online Services project information.
+   1. Use `git clone https://github.com/PlayEveryWare/eos_plugin_for_unity` when downloading **eos_plugin_for_unity**. If you download as zip, you may have errors with the included DLLs.
+   2. Copy **Assets/Plugins** from repository to your project's **Assets/Plugins** folder.
+   3. Requires Unity 2020.1.11f1 or newer.
+   4. Requires Unity Package: `com.unity.editorcoroutines`
+   5. [Configure the plugin](https://github.com/PlayEveryWare/eos_plugin_for_unity#steps) with your Epic Online Services project information.
 
 
 ## Installation
