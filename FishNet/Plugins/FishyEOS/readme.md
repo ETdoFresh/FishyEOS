@@ -82,4 +82,10 @@ As of **PlayEveryWare/eos_plugin_for_unity@2.1.5**. Android, IOS, and MacOS supp
 3. If you have your EOS configured, you will have a config file located in **Assets/StreamingAssets/EOS/EpicOnlineServicesConfig.json**
    1. For Android, Duplicate **Assets/StreamingAssets/EOS/**`EpicOnlineServicesConfig.json` to `eos_android_config.json`
    2. For MacOS, Duplicate **Assets/StreamingAssets/EOS/**`EpicOnlineServicesConfig.json` to `eos_macos_config.json`
-4. If you are trying to use MacOS preview on M1, here's how I got it to work: https://github.com/PlayEveryWare/eos_plugin_for_unity/issues/141#issuecomment-1285576199 
+4. Android Builds require Android Build Tools 30.0.3. If you are using Unity 2020, you probably will need to update your build tools. (Otherwise, I think you are fine?)
+   ```shell
+   rem Run an administrator privledged command prompt/terminal
+   cd \Program Files\Unity\Hub\Editor\2020.3.33f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK\tools\bin
+   sdkmanager.bat --install build-tools;30.0.3
+   ```
+5. If you are trying to use MacOS preview on M1, here's how I got it to work: https://github.com/PlayEveryWare/eos_plugin_for_unity/issues/141#issuecomment-1285576199 
