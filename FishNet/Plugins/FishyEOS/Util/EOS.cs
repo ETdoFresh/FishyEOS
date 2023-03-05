@@ -23,6 +23,15 @@ namespace FishNet.Plugins.FishyEOS.Util
 
         public static ProductUserId LocalProductUserId => GetCachedConnectInterface()?.GetLoggedInUserByIndex(0);
 
+        public static void ClearCachedInterface()
+        {
+            _cachedAuthInterface = null;
+            _cachedConnectInterface = null;
+            _cachedP2PInterface = null;
+            _eosManager = null;
+            _createdOrGotPlatformInterface = false;
+        }
+
         public static PlatformInterface GetPlatformInterface()
         {
             if (_createdOrGotPlatformInterface) return EOSManager.Instance?.GetEOSPlatformInterface();
