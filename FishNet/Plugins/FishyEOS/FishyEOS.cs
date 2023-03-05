@@ -114,6 +114,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
         public override void Initialize(NetworkManager networkManager, int transportIndex)
         {
             base.Initialize(networkManager, transportIndex);
+            EOS.ClearCachedInterface();
             _client.Initialize(this);
             _clientHost.Initialize(this);
             _server.Initialize(this);
