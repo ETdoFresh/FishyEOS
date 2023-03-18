@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Linq;
-using System.Threading.Tasks;
 using EOSLobby.EOSCoroutines;
 using Epic.OnlineServices;
 using Epic.OnlineServices.Auth;
@@ -154,7 +153,7 @@ namespace EOSLobby
 
             LobbyVariables.Instance.lobbyPopupUI.Hide();
 
-            var attributes = LobbyDetailsEOS.GetAttributes(lobbyDetails);
+            var attributes = Lobby.GetAttributes(lobbyDetails);
             currentLobby.attributeKeys = attributes.Select(x => x?.Data?.Key).Select(x => (string)x).ToArray();
             currentLobby.attributeValues =
                 attributes.Select(x => x?.Data?.Value.AsUtf8).Select(x => (string)x).ToArray();
@@ -195,13 +194,13 @@ namespace EOSLobby
             }
 
             LobbyVariables.Instance.lobbyPopupUI.Show("Joining Lobby...", "Getting Lobby Info...");
-            var getLobbyInfoResult = LobbyDetailsEOS.GetLobbyInfo(lobbyDetails, out var lobbyInfo);
+            var getLobbyInfoResult = Lobby.GetLobbyInfo(lobbyDetails, out var lobbyInfo);
             if (getLobbyInfoResult != Result.Success)
                 Debug.LogWarning($"[LobbyCode] Failed to get lobby info: {getLobbyInfoResult}");
             var lobbyId = lobbyInfo?.LobbyId;
 
             LobbyVariables.Instance.lobbyPopupUI.Show("Joining Lobby...", "Getting Lobby Name...");
-            var getAttributeResult = LobbyDetailsEOS.GetAttribute(lobbyDetails, "NAME", out var lobbyNameAttribute);
+            var getAttributeResult = Lobby.GetAttribute(lobbyDetails, "NAME", out var lobbyNameAttribute);
             if (getAttributeResult != Result.Success)
                 Debug.LogWarning($"[LobbyCode] Failed to get lobby name: {getAttributeResult}");
             LobbyVariables.Instance.hostLobbyName.Value = lobbyNameAttribute?.Data?.Value.AsUtf8;
@@ -218,7 +217,7 @@ namespace EOSLobby
                 Debug.LogWarning($"[LobbyCode] Failed to update lobby member name: {setName.CallbackInfo?.ResultCode}");
 
             LobbyVariables.Instance.lobbyPopupUI.Show("Joining Lobby...", "Getting Attributes...");
-            var attributes = LobbyDetailsEOS.GetAttributes(lobbyDetails);
+            var attributes = Lobby.GetAttributes(lobbyDetails);
             currentLobby.attributeKeys = attributes.Select(x => x?.Data?.Key).Select(x => (string)x).ToArray();
             currentLobby.attributeValues =
                 attributes.Select(x => x?.Data?.Value.AsUtf8).Select(x => (string)x).ToArray();
@@ -289,17 +288,17 @@ namespace EOSLobby
             var lobbyMembers = lobby.lobbyMembers;
             var localUserId = LobbyVariables.Instance.ProductUserId;
             if (lobby.LobbyDetails != null) lobby.LobbyDetails.Release();
-            LobbyEOS.GetLobbyDetails(lobbyId, localUserId, out var lobbyDetails);
+            Lobby.GetLobbyDetails(out var lobbyDetails, lobbyId, localUserId);
             lobby.LobbyDetails = lobbyDetails;
             lobbyMembers.Clear();
-            foreach (var productUserId in LobbyDetailsEOS.GetMembers(lobbyDetails))
+            foreach (var productUserId in Lobby.GetMembers(lobbyDetails))
             {
                 var getMemberAttributeResult =
-                    LobbyDetailsEOS.GetMemberAttribute(lobbyDetails, productUserId, "NAME", out var memberName);
+                    Lobby.GetMemberAttribute(lobbyDetails, productUserId, "NAME", out var memberName);
                 if (getMemberAttributeResult != Result.Success)
                     Debug.LogWarning(
                         $"[LobbyCode] Failed to get member name. {getMemberAttributeResult} - {productUserId}");
-                var allAttributes = LobbyDetailsEOS.GetMemberAttributes(lobbyDetails, productUserId);
+                var allAttributes = Lobby.GetMemberAttributes(lobbyDetails, productUserId);
                 lobbyMembers.Add(new LobbyData.LobbyMember
                 {
                     displayName = memberName?.Data?.Value.AsUtf8,
@@ -365,7 +364,7 @@ namespace EOSLobby
         {
             var localUserId = LobbyVariables.Instance.ProductUserId;
             var currentLobby = LobbyVariables.Instance.currentLobby;
-            var result = LobbyEOS.GetLobbyDetails(e.LobbyId, localUserId, out var lobbyDetails);
+            var result = Lobby.GetLobbyDetails(out var lobbyDetails, e.LobbyId, localUserId);
             if (result != Result.Success)
             {
                 Debug.LogWarning($"[LobbyCode] Failed to get lobby details. {result}");
@@ -378,7 +377,7 @@ namespace EOSLobby
                                  currentLobby.attributeValues[Array.IndexOf(currentLobby.attributeKeys, "GAME")] ==
                                  "Started";
 
-            var attributes = LobbyDetailsEOS.GetAttributes(lobbyDetails);
+            var attributes = Lobby.GetAttributes(lobbyDetails);
             currentLobby.attributeKeys = new string[attributes.Count];
             currentLobby.attributeValues = new string[attributes.Count];
             for (var i = 0; i < attributes.Count; i++)
@@ -461,25 +460,6 @@ namespace EOSLobby
             }
         }
 
-        private static async Task<ProductUserId> AuthenticateAsync()
-        {
-            var loginCredentialType = LobbyVariables.Instance.AuthData.loginCredentialType;
-            var externalCredentialType = LobbyVariables.Instance.AuthData.externalCredentialType;
-            var id = LobbyVariables.Instance.AuthData.id;
-            var token = LobbyVariables.Instance.AuthData.token;
-            var displayName = LobbyVariables.Instance.AuthData.displayName;
-            var automaticallyCreateDeviceId = LobbyVariables.Instance.AuthData.automaticallyCreateDeviceId;
-            var automaticallyCreateConnectAccount =
-                LobbyVariables.Instance.AuthData.automaticallyCreateConnectAccount;
-            var timeout = (int)LobbyVariables.Instance.AuthData.timeout;
-            var scopeFlags = LobbyVariables.Instance.AuthData.authScopeFlags;
-            var loginCallbackInfo = await ConnectEOS.LoginAsync(loginCredentialType, externalCredentialType, id,
-                token,
-                displayName, automaticallyCreateDeviceId, automaticallyCreateConnectAccount, timeout, scopeFlags);
-            var localUserId = loginCallbackInfo.LocalUserId;
-            return localUserId;
-        }
-
         private void OnLeaveLobbyClicked() => StartCoroutine(OnLeaveLobbyClickedCoroutine());
         
         private IEnumerator OnLeaveLobbyClickedCoroutine()
@@ -507,13 +487,6 @@ namespace EOSLobby
             LobbyVariables.Instance.lobbyRoomUI.SetActive(false);
             LobbyVariables.Instance.lobbyBrowserUI.SetActive(true);
             StartPollingLobbies();
-        }
-
-        private async Task<ProductUserId> GetLocalUsedIdAsync()
-        {
-            return LobbyVariables.Instance.ProductUserId = LobbyVariables.Instance.ProductUserId == null
-                ? await AuthenticateAsync()
-                : LobbyVariables.Instance.ProductUserId;
         }
 
         private class LocalUser

@@ -18,7 +18,7 @@ namespace EOSLobby.EOSCoroutines
                 ref addNotifyLobbyMemberUpdateReceivedOptions,
                 null, (ref LobbyMemberUpdateReceivedCallbackInfo callbackInfo) => callback?.Invoke(callbackInfo));
             handles.Add($"LobbyMemberUpdateReceived-{callback.Target}-{callback.Method.Name}", handle);
-            Debug.Log($"LobbyNotify.AddNotifyLobbyMemberUpdateReceived: {callback.Target}-{callback.Method.Name} - {handle}");
+            Debug.Log($"[LobbyNotify] AddNotifyLobbyMemberUpdateReceived: {callback.Target}-{callback.Method.Name} - {handle}");
         }
 
         public static void AddNotifyLobbyMemberStatusReceived(
@@ -31,7 +31,7 @@ namespace EOSLobby.EOSCoroutines
                 null,
                 (ref LobbyMemberStatusReceivedCallbackInfo callbackInfo) => callback?.Invoke(callbackInfo));
             handles.Add($"LobbyMemberStatusReceived-{callback.Target}-{callback.Method.Name}", handle);
-            Debug.Log($"LobbyNotify.AddNotifyLobbyMemberStatusReceived: {callback.Target}-{callback.Method.Name} - {handle}");
+            Debug.Log($"[LobbyNotify] AddNotifyLobbyMemberStatusReceived: {callback.Target}-{callback.Method.Name} - {handle}");
         }
 
         public static void AddNotifyLobbyUpdateReceived(Action<LobbyUpdateReceivedCallbackInfo> callback = null)
@@ -41,7 +41,7 @@ namespace EOSLobby.EOSCoroutines
             var handle = lobbyInterface.AddNotifyLobbyUpdateReceived(ref addNotifyLobbyUpdateReceivedOptions, null,
                 (ref LobbyUpdateReceivedCallbackInfo callbackInfo) => callback?.Invoke(callbackInfo));
             handles.Add($"LobbyUpdateReceived-{callback.Target}-{callback.Method.Name}", handle);
-            Debug.Log($"LobbyNotify.AddNotifyLobbyUpdateReceived: {callback.Target}-{callback.Method.Name} - {handle}");
+            Debug.Log($"[LobbyNotify] AddNotifyLobbyUpdateReceived: {callback.Target}-{callback.Method.Name} - {handle}");
         }
 
         public static void RemoveNotifyLobbyMemberUpdateReceived(Action<LobbyMemberUpdateReceivedCallbackInfo> callback)
@@ -52,7 +52,7 @@ namespace EOSLobby.EOSCoroutines
             var lobbyInterface = EOS.GetPlatformInterface().GetLobbyInterface();
             lobbyInterface.RemoveNotifyLobbyMemberUpdateReceived(handle);
             handles.Remove(key);
-            Debug.Log($"LobbyNotify.RemoveNotifyLobbyMemberUpdateReceived: {callback.Target}-{callback.Method.Name} - {handle}");
+            Debug.Log($"[LobbyNotify] RemoveNotifyLobbyMemberUpdateReceived: {callback.Target}-{callback.Method.Name} - {handle}");
         }
 
         public static void RemoveNotifyLobbyMemberStatusReceived(Action<LobbyMemberStatusReceivedCallbackInfo> callback)
@@ -63,7 +63,7 @@ namespace EOSLobby.EOSCoroutines
             var lobbyInterface = EOS.GetPlatformInterface().GetLobbyInterface();
             lobbyInterface.RemoveNotifyLobbyMemberStatusReceived(handle);
             handles.Remove(key);
-            Debug.Log($"LobbyNotify.RemoveNotifyLobbyMemberStatusReceived: {callback.Target}-{callback.Method.Name} - {handle}");
+            Debug.Log($"[LobbyNotify] RemoveNotifyLobbyMemberStatusReceived: {callback.Target}-{callback.Method.Name} - {handle}");
         }
 
         public static void RemoveNotifyLobbyUpdateReceived(Action<LobbyUpdateReceivedCallbackInfo> callback)
@@ -74,7 +74,7 @@ namespace EOSLobby.EOSCoroutines
             var lobbyInterface = EOS.GetPlatformInterface().GetLobbyInterface();
             lobbyInterface.RemoveNotifyLobbyUpdateReceived(handle);
             handles.Remove(key);
-            Debug.Log($"LobbyNotify.RemoveNotifyLobbyUpdateReceived: {callback.Target}-{callback.Method.Name} - {handle}");
+            Debug.Log($"[LobbyNotify] RemoveNotifyLobbyUpdateReceived: {callback.Target}-{callback.Method.Name} - {handle}");
         }
     }
 }
