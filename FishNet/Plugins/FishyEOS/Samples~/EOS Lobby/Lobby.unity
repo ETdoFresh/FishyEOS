@@ -2332,19 +2332,13 @@ MonoBehaviour:
   ToggleValueChanged:
     m_PersistentCalls:
       m_Calls: []
-  LobbyUserReadyChanged:
+  LobbyUpdateReceived:
     m_PersistentCalls:
       m_Calls: []
-  LobbyUserJoined:
+  LobbyMemberStatusReceived:
     m_PersistentCalls:
       m_Calls: []
-  LobbyUserLeft:
-    m_PersistentCalls:
-      m_Calls: []
-  LobbyUserMessageReceived:
-    m_PersistentCalls:
-      m_Calls: []
-  LeaveGameClicked:
+  LobbyMemberUpdateReceived:
     m_PersistentCalls:
       m_Calls: []
 --- !u!1 &409907338
@@ -10203,8 +10197,8 @@ MonoBehaviour:
   NetworkObserver: {fileID: 0}
   <PrefabId>k__BackingField: 0
   <SpawnableCollectionId>k__BackingField: 0
-  _scenePathHash: 2025712565
-  <SceneId>k__BackingField: 8700369219017152481
+  _scenePathHash: 3966426344
+  <SceneId>k__BackingField: 17035671432003293508
   <AssetPathHash>k__BackingField: 0
   _sceneNetworkObjects: []
 --- !u!1 &1768571530

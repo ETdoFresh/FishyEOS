@@ -14,7 +14,7 @@ namespace EOSLobby
         
         private void OnEnable() => inputField.onValueChanged.AddPersistentListener(InvokeInputFieldChangedEvent);
         
-        private void OnDisable() => inputField.onValueChanged.RemoveListener(InvokeInputFieldChangedEvent);
+        private void OnDisable() => inputField.onValueChanged.RemovePersistentListener(InvokeInputFieldChangedEvent);
         
         private void InvokeInputFieldChangedEvent(string value) => LobbyEvents.Instance.InputFieldChanged.Invoke(inputField);
     }

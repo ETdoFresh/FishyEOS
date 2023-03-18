@@ -12,9 +12,9 @@ namespace EOSLobby
             if (!toggle) toggle = GetComponent<Toggle>();
         }
 
-        private void OnEnable() => toggle.onValueChanged.AddListener(InvokeToggleValueChangedEvent);
+        private void OnEnable() => toggle.onValueChanged.AddPersistentListener(InvokeToggleValueChangedEvent);
 
-        private void OnDisable() => toggle.onValueChanged.RemoveListener(InvokeToggleValueChangedEvent);
+        private void OnDisable() => toggle.onValueChanged.RemovePersistentListener(InvokeToggleValueChangedEvent);
 
         private void InvokeToggleValueChangedEvent(bool value) =>
             LobbyEvents.Instance.ToggleValueChanged.Invoke(toggle);

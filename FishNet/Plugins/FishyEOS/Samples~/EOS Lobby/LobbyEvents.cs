@@ -1,4 +1,6 @@
-﻿using TMPro;
+﻿using EOSLobby.EOSCoroutines;
+using Epic.OnlineServices.Lobby;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -14,19 +16,29 @@ namespace EOSLobby
         public UnityEvent<Toggle> ToggleValueChanged;
 
         [Header("Lobby Room")]
-        public UnityEvent<LobbyUser, bool> LobbyUserReadyChanged;
-        public UnityEvent<LobbyUser> LobbyUserJoined;
-        public UnityEvent<LobbyUser> LobbyUserLeft;
-        public UnityEvent<LobbyUser, string> LobbyUserMessageReceived;
-
-        [Header("Lobby Game")]
-        public UnityEvent LeaveGameClicked;
-
+        public UnityEvent<LobbyUpdateReceivedCallbackInfo> LobbyUpdateReceived;
+        public UnityEvent<LobbyMemberStatusReceivedCallbackInfo> LobbyMemberStatusReceived;
+        public UnityEvent<LobbyMemberUpdateReceivedCallbackInfo> LobbyMemberUpdateReceived;
+        
         public static LobbyEvents Instance;
 
         private void Awake()
         {
             Instance = this;
+        }
+
+        private void OnEnable()
+        {
+            LobbyNotify.AddNotifyLobbyUpdateReceived(LobbyUpdateReceived.Invoke);
+            LobbyNotify.AddNotifyLobbyMemberStatusReceived(LobbyMemberStatusReceived.Invoke);
+            LobbyNotify.AddNotifyLobbyMemberUpdateReceived(LobbyMemberUpdateReceived.Invoke);
+        }
+
+        private void OnDisable()
+        {
+            LobbyNotify.RemoveNotifyLobbyUpdateReceived(LobbyUpdateReceived.Invoke);
+            LobbyNotify.RemoveNotifyLobbyMemberStatusReceived(LobbyMemberStatusReceived.Invoke);
+            LobbyNotify.RemoveNotifyLobbyMemberUpdateReceived(LobbyMemberUpdateReceived.Invoke);
         }
     }
 }

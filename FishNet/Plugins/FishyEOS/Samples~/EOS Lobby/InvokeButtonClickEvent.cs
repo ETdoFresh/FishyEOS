@@ -16,7 +16,7 @@ namespace EOSLobby
 
         private void OnEnable() => button.onClick.AddPersistentListener(InvokeButtonClickedEvent);
 
-        private void OnDisable() => button.onClick.RemoveListener(InvokeButtonClickedEvent);
+        private void OnDisable() => button.onClick.RemovePersistentListener(InvokeButtonClickedEvent);
 
         private void InvokeButtonClickedEvent() =>
             LobbyEvents.Instance.ButtonClicked.Invoke(new ButtonData { Button = button, CustomData = CustomData });
