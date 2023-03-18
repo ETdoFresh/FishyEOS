@@ -19,11 +19,7 @@ namespace EOSLobby
     public class LobbyCode : MonoBehaviour
     {
         private Coroutine _pollCoroutine;
-
-        // TODO: Add leave game button implementation.
-        // TODO: Fix bug LobbyNotifyHandles already contains callback for LobbyCode (EOSLobby.LobbyCode) [leaving host and hosting again]
-        // TODO: Fix occasional crashes (I think due to async calls or releasing handles too early).
-
+        
         private void OnEnable()
         {
             LobbyEvents.Instance.ButtonClicked.AddPersistentListener(OnButtonClicked);
@@ -36,6 +32,7 @@ namespace EOSLobby
         {
             LobbyEvents.Instance.ButtonClicked.RemovePersistentListener(OnButtonClicked);
             LobbyEvents.Instance.ToggleValueChanged.RemovePersistentListener(OnToggleValueChanged);
+            ReleaseSearchResults();
             StopPollingLobbies();
         }
 
@@ -84,7 +81,7 @@ namespace EOSLobby
                 yield return new WaitForSeconds(LobbyVariables.Instance.pollLobbiesInterval);
             }
         }
-        
+
         private IEnumerator OnHobbyLobbyClickedRoutine()
         {
             StopPollingLobbies();
@@ -106,6 +103,7 @@ namespace EOSLobby
             yield return LobbyCreateLobby.Run(out var createLobby, localUserId, maxLobbyUsers, bucketId);
             if (createLobby.CallbackInfo?.ResultCode != Result.Success)
             {
+                LobbyVariables.Instance.hostLobbyName.Value = string.Empty;
                 yield return LobbyVariables.Instance.lobbyPopupUI.PromptCoroutine(out _, "Error",
                     createLobby.CallbackInfo?.ResultCode.ToString());
                 StartPollingLobbies();
@@ -124,10 +122,7 @@ namespace EOSLobby
                 Debug.LogWarning($"[LobbyCode] Failed to get lobby details: {result}");
             }
 
-            var currentLobby = new LobbyData
-            {
-                LobbyDetails = lobbyDetails, lobbyId = lobbyId, lobbyName = lobbyName, maxPlayers = maxLobbyUsers
-            };
+            var currentLobby = new LobbyData { lobbyId = lobbyId, lobbyName = lobbyName, maxPlayers = maxLobbyUsers };
             LobbyVariables.Instance.currentLobby = currentLobby;
 
             LobbyVariables.Instance.lobbyPopupUI.Show("Hosting Lobby...", "Setting Host Display Name...");
@@ -155,6 +150,7 @@ namespace EOSLobby
             currentLobby.attributeValues =
                 attributes.Select(x => x?.Data?.Value.AsUtf8).Select(x => (string)x).ToArray();
 
+            lobbyDetails.Release();
             LobbyVariables.Instance.hostStartGameButton.SetActive(true);
             LobbyVariables.Instance.selfReadyToggle.gameObject.SetActive(false);
             LobbyVariables.Instance.lobbyBrowserUI.SetActive(false);
@@ -173,7 +169,15 @@ namespace EOSLobby
             yield return LocalUser.Get(out var localUser);
             var localUserId = localUser.Id;
             var lobbyDetails = (LobbyDetails)buttonData.CustomData;
-            
+
+            if (lobbyDetails == null)
+            {
+                yield return LobbyVariables.Instance.lobbyPopupUI.PromptCoroutine(out _, "Error",
+                    "Lobby details is null");
+                StartPollingLobbies();
+                yield break;
+            }
+
             LobbyEvents.Instance.LobbyMemberStatusReceived.AddPersistentListener(OnLobbyMemberStatusReceived);
             LobbyEvents.Instance.LobbyMemberUpdateReceived.AddPersistentListener(OnLobbyMemberUpdateReceived);
             LobbyEvents.Instance.LobbyUpdateReceived.AddPersistentListener(OnLobbyUpdateReceived);
@@ -182,6 +186,9 @@ namespace EOSLobby
             yield return LobbyJoinLobby.Run(out var joinLobby, localUserId, lobbyDetails);
             if (joinLobby.CallbackInfo?.ResultCode != Result.Success)
             {
+                LobbyEvents.Instance.LobbyMemberStatusReceived.RemovePersistentListener(OnLobbyMemberStatusReceived);
+                LobbyEvents.Instance.LobbyMemberUpdateReceived.RemovePersistentListener(OnLobbyMemberUpdateReceived);
+                LobbyEvents.Instance.LobbyUpdateReceived.RemovePersistentListener(OnLobbyUpdateReceived);
                 yield return LobbyVariables.Instance.lobbyPopupUI.PromptCoroutine(out _, "Error",
                     joinLobby.CallbackInfo?.ResultCode.ToString());
                 StartPollingLobbies();
@@ -191,7 +198,16 @@ namespace EOSLobby
             LobbyVariables.Instance.lobbyPopupUI.Show("Joining Lobby...", "Getting Lobby Info...");
             var getLobbyInfoResult = Lobby.GetLobbyInfo(lobbyDetails, out var lobbyInfo);
             if (getLobbyInfoResult != Result.Success)
-                Debug.LogWarning($"[LobbyCode] Failed to get lobby info: {getLobbyInfoResult}");
+            {
+                LobbyEvents.Instance.LobbyMemberStatusReceived.RemovePersistentListener(OnLobbyMemberStatusReceived);
+                LobbyEvents.Instance.LobbyMemberUpdateReceived.RemovePersistentListener(OnLobbyMemberUpdateReceived);
+                LobbyEvents.Instance.LobbyUpdateReceived.RemovePersistentListener(OnLobbyUpdateReceived);
+                yield return LobbyVariables.Instance.lobbyPopupUI.PromptCoroutine(out _, "Error",
+                    getLobbyInfoResult.ToString());
+                StartPollingLobbies();
+                yield break;
+            }
+
             var lobbyId = lobbyInfo?.LobbyId;
 
             LobbyVariables.Instance.lobbyPopupUI.Show("Joining Lobby...", "Getting Lobby Name...");
@@ -199,10 +215,8 @@ namespace EOSLobby
             if (getAttributeResult != Result.Success)
                 Debug.LogWarning($"[LobbyCode] Failed to get lobby name: {getAttributeResult}");
             LobbyVariables.Instance.hostLobbyName.Value = lobbyNameAttribute?.Data?.Value.AsUtf8;
-            var currentLobby = new LobbyData
-            {
-                LobbyDetails = lobbyDetails, lobbyId = lobbyId, lobbyName = lobbyNameAttribute?.Data?.Value.AsUtf8,
-            };
+
+            var currentLobby = new LobbyData { lobbyId = lobbyId, lobbyName = lobbyNameAttribute?.Data?.Value.AsUtf8, };
             LobbyVariables.Instance.currentLobby = currentLobby;
 
             LobbyVariables.Instance.lobbyPopupUI.Show("Joining Lobby...", "Setting Local User Display Name...");
@@ -220,13 +234,18 @@ namespace EOSLobby
             var gameStartedIndex = Array.IndexOf(currentLobby.attributeKeys, "GAME");
             if (gameStartedIndex != -1 && currentLobby.attributeValues[gameStartedIndex] == "Started")
             {
-                yield return LobbyVariables.Instance.lobbyPopupUI.PromptCoroutine(out _, "Error", "Game has already started.");
+                LobbyVariables.Instance.hostLobbyName.Value = string.Empty;
+                LobbyEvents.Instance.LobbyMemberStatusReceived.RemovePersistentListener(OnLobbyMemberStatusReceived);
+                LobbyEvents.Instance.LobbyMemberUpdateReceived.RemovePersistentListener(OnLobbyMemberUpdateReceived);
+                LobbyEvents.Instance.LobbyUpdateReceived.RemovePersistentListener(OnLobbyUpdateReceived);
+                yield return LobbyVariables.Instance.lobbyPopupUI.PromptCoroutine(out _, "Error",
+                    "Game has already started.");
                 StartPollingLobbies();
                 yield break;
             }
 
+            ReleaseSearchResults();
             LobbyVariables.Instance.lobbyPopupUI.Hide();
-
             LobbyVariables.Instance.hostStartGameButton.SetActive(false);
             LobbyVariables.Instance.selfReadyToggle.gameObject.SetActive(true);
             LobbyVariables.Instance.lobbyBrowserUI.SetActive(false);
@@ -237,11 +256,12 @@ namespace EOSLobby
         {
             var localUserId = LobbyVariables.Instance.ProductUserId;
             var lobbyId = LobbyVariables.Instance.currentLobby.lobbyId;
+            LobbyVariables.Instance.hostLobbyName.Value = string.Empty;
 
             LobbyVariables.Instance.lobbyPopupUI.Show("Leaving Lobby...", "Please wait...");
             yield return LobbyLeaveLobby.Run(out var leaveLobby, lobbyId, localUserId);
             LobbyVariables.Instance.lobbyPopupUI.Hide();
-            
+
             LobbyEvents.Instance.LobbyMemberStatusReceived.RemovePersistentListener(OnLobbyMemberStatusReceived);
             LobbyEvents.Instance.LobbyMemberUpdateReceived.RemovePersistentListener(OnLobbyMemberUpdateReceived);
             LobbyEvents.Instance.LobbyUpdateReceived.RemovePersistentListener(OnLobbyUpdateReceived);
@@ -251,9 +271,6 @@ namespace EOSLobby
                 yield return LobbyVariables.Instance.lobbyPopupUI.PromptCoroutine(out _, "Error",
                     leaveLobby.CallbackInfo?.ResultCode.ToString());
             }
-
-            if (LobbyVariables.Instance.currentLobby.LobbyDetails != null)
-                LobbyVariables.Instance.currentLobby.LobbyDetails.Release();
 
             LobbyVariables.Instance.currentLobby = null;
             LobbyVariables.Instance.lobbyRoomUI.SetActive(false);
@@ -267,7 +284,8 @@ namespace EOSLobby
             yield return LobbyUpdateLobby.Run(out var updateLobby, lobbyId, "GAME", "Started");
             if (updateLobby.CallbackInfo?.ResultCode != Result.Success)
             {
-                yield return LobbyVariables.Instance.lobbyPopupUI.PromptCoroutine(out _, "Error", updateLobby.CallbackInfo?.ResultCode.ToString());
+                yield return LobbyVariables.Instance.lobbyPopupUI.PromptCoroutine(out _, "Error",
+                    updateLobby.CallbackInfo?.ResultCode.ToString());
                 yield break;
             }
 
@@ -286,7 +304,7 @@ namespace EOSLobby
             fishyEOS.gameObject.SetActive(true);
             networkManager.ServerManager.StartConnection();
             networkManager.ClientManager.StartConnection();
-            
+
             yield return LobbyLeaveLobby.Run(out _, lobbyId, localUserId);
             LobbyVariables.Instance.currentLobby = null;
 
@@ -294,7 +312,7 @@ namespace EOSLobby
             LobbyVariables.Instance.lobbyGameUI.SetActive(true);
             LobbyVariables.Instance.lobbyGame.SetActive(true);
         }
-        
+
         private IEnumerator OnChatSendClickedRoutine()
         {
             var chatInput = LobbyVariables.Instance.chatInputField;
@@ -305,7 +323,8 @@ namespace EOSLobby
             yield return LobbySetMemberAttribute.Run(out var setChat, lobbyId, localUserId, "CHAT", chatText);
             if (setChat.CallbackInfo?.ResultCode != Result.Success)
             {
-                yield return LobbyVariables.Instance.lobbyPopupUI.PromptCoroutine(out _, "Error", setChat.CallbackInfo?.ResultCode.ToString());
+                yield return LobbyVariables.Instance.lobbyPopupUI.PromptCoroutine(out _, "Error",
+                    setChat.CallbackInfo?.ResultCode.ToString());
                 yield break;
             }
 
@@ -317,12 +336,13 @@ namespace EOSLobby
             var networkManager = InstanceFinder.NetworkManager;
             networkManager.ServerManager.StopConnection(true);
             networkManager.ClientManager.StopConnection();
+            LobbyVariables.Instance.hostLobbyName.Value = string.Empty;
             LobbyVariables.Instance.lobbyGameUI.SetActive(false);
             LobbyVariables.Instance.lobbyGame.SetActive(false);
             LobbyVariables.Instance.lobbyBrowserUI.SetActive(true);
             StartPollingLobbies();
         }
-        
+
         private IEnumerator OnReadyToggleValueChangedRoutine(Toggle toggle)
         {
             var isReady = toggle.isOn;
@@ -331,7 +351,8 @@ namespace EOSLobby
             yield return LobbySetMemberAttribute.Run(out var setReady, lobbyId, localUserId, "READY",
                 isReady ? "Ready" : "Not Ready");
             if (setReady.CallbackInfo?.ResultCode != Result.Success)
-                Debug.LogWarning($"[LobbyCode] Failed to update lobby member name: {setReady.CallbackInfo?.ResultCode}");
+                Debug.LogWarning(
+                    $"[LobbyCode] Failed to update lobby member name: {setReady.CallbackInfo?.ResultCode}");
             var toggleLabel = toggle.GetComponentInChildren<TextMeshProUGUI>();
             toggleLabel.text = isReady ? "<color=green>Ready</color>" : "<color=red>Not Ready</color>";
         }
@@ -358,6 +379,9 @@ namespace EOSLobby
             for (var i = lobbies.childCount - 1; i > 0; i--)
                 Destroy(lobbies.GetChild(i).gameObject);
 
+            ReleaseSearchResults();
+            LobbyVariables.Instance.searchResults = lobbyDetails;
+
             if (lobbyDetails == null) return;
             var lobbyPrefab = lobbies.GetChild(0).gameObject;
             foreach (var lobbyDetail in lobbyDetails)
@@ -373,6 +397,19 @@ namespace EOSLobby
             }
         }
 
+        private static void ReleaseSearchResults()
+        {
+            LobbyVariables.Instance.searchResults ??= Array.Empty<LobbyDetails>();
+            for (var i = LobbyVariables.Instance.searchResults.Length - 1; i >= 0; i--)
+            {
+                if (LobbyVariables.Instance.searchResults[i] == null) continue;
+                LobbyVariables.Instance.searchResults[i].Release();
+                LobbyVariables.Instance.searchResults[i] = null;
+            }
+
+            LobbyVariables.Instance.searchResults = Array.Empty<LobbyDetails>();
+        }
+
         private void PopulateUserList(ProductUserId targetUserId = null)
         {
             var users = LobbyVariables.Instance.userListContent;
@@ -385,9 +422,7 @@ namespace EOSLobby
             var lobbyId = lobby.lobbyId;
             var lobbyMembers = lobby.lobbyMembers;
             var localUserId = LobbyVariables.Instance.ProductUserId;
-            if (lobby.LobbyDetails != null) lobby.LobbyDetails.Release();
             Lobby.GetLobbyDetails(out var lobbyDetails, lobbyId, localUserId);
-            lobby.LobbyDetails = lobbyDetails;
             lobbyMembers.Clear();
             foreach (var productUserId in Lobby.GetMembers(lobbyDetails))
             {
@@ -405,6 +440,8 @@ namespace EOSLobby
                     attributeValues = allAttributes.Select(x => x?.Data?.Value.AsUtf8).Select(x => (string)x).ToArray()
                 });
             }
+
+            lobbyDetails.Release();
 
             var userPrefab = users.GetChild(0).gameObject;
             foreach (var lobbyMember in lobbyMembers)
@@ -469,13 +506,12 @@ namespace EOSLobby
                 return;
             }
 
-            currentLobby.LobbyDetails = lobbyDetails;
-
             var wasGameStarted = currentLobby.attributeKeys.Contains("GAME") &&
                                  currentLobby.attributeValues[Array.IndexOf(currentLobby.attributeKeys, "GAME")] ==
                                  "Started";
 
             var attributes = Lobby.GetAttributes(lobbyDetails);
+            lobbyDetails.Release();
             currentLobby.attributeKeys = new string[attributes.Count];
             currentLobby.attributeValues = new string[attributes.Count];
             for (var i = 0; i < attributes.Count; i++)
@@ -513,11 +549,11 @@ namespace EOSLobby
                         : LobbyVariables.Instance.AuthData.displayName;
                 fishyEOS.gameObject.SetActive(true);
                 networkManager.ClientManager.StartConnection();
-                
+
                 LobbyEvents.Instance.LobbyMemberStatusReceived.RemovePersistentListener(OnLobbyMemberStatusReceived);
                 LobbyEvents.Instance.LobbyMemberUpdateReceived.RemovePersistentListener(OnLobbyMemberUpdateReceived);
                 LobbyEvents.Instance.LobbyUpdateReceived.RemovePersistentListener(OnLobbyUpdateReceived);
-                
+
                 LobbyLeaveLobby.Run(out _, currentLobby.lobbyId, localUserId);
                 LobbyVariables.Instance.currentLobby = null;
 

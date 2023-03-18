@@ -8,7 +8,6 @@ namespace EOSLobby
     [Serializable]
     public class LobbyData
     {
-        public LobbyDetails LobbyDetails { get; set; }
         public string lobbyId;
         public string lobbyName;
         public uint maxPlayers;

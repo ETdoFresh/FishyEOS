@@ -26,6 +26,7 @@ namespace EOSLobby
         
         public void Hide()
         {
+            Debug.Log("[LobbyPopup] Hiding");
             gameObject.SetActive(false);
         }
 

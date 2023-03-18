@@ -49,8 +49,8 @@ namespace EOSLobby.EOSCoroutines
             var key = $"LobbyMemberUpdateReceived-{callback.Target}-{callback.Method.Name}";
             if (!handles.ContainsKey(key)) return;
             var handle = handles[key];
-            var lobbyInterface = EOS.GetPlatformInterface().GetLobbyInterface();
-            lobbyInterface.RemoveNotifyLobbyMemberUpdateReceived(handle);
+            var lobbyInterface = EOS.GetPlatformInterface()?.GetLobbyInterface();
+            lobbyInterface?.RemoveNotifyLobbyMemberUpdateReceived(handle);
             handles.Remove(key);
             Debug.Log($"[LobbyNotify] RemoveNotifyLobbyMemberUpdateReceived: {callback.Target}-{callback.Method.Name} - {handle}");
         }
@@ -60,8 +60,8 @@ namespace EOSLobby.EOSCoroutines
             var key = $"LobbyMemberStatusReceived-{callback.Target}-{callback.Method.Name}";
             if (!handles.ContainsKey(key)) return;
             var handle = handles[key];
-            var lobbyInterface = EOS.GetPlatformInterface().GetLobbyInterface();
-            lobbyInterface.RemoveNotifyLobbyMemberStatusReceived(handle);
+            var lobbyInterface = EOS.GetPlatformInterface()?.GetLobbyInterface();
+            lobbyInterface?.RemoveNotifyLobbyMemberStatusReceived(handle);
             handles.Remove(key);
             Debug.Log($"[LobbyNotify] RemoveNotifyLobbyMemberStatusReceived: {callback.Target}-{callback.Method.Name} - {handle}");
         }
@@ -71,8 +71,8 @@ namespace EOSLobby.EOSCoroutines
             var key = $"LobbyUpdateReceived-{callback.Target}-{callback.Method.Name}";
             if (!handles.ContainsKey(key)) return;
             var handle = handles[key];
-            var lobbyInterface = EOS.GetPlatformInterface().GetLobbyInterface();
-            lobbyInterface.RemoveNotifyLobbyUpdateReceived(handle);
+            var lobbyInterface = EOS.GetPlatformInterface()?.GetLobbyInterface();
+            lobbyInterface?.RemoveNotifyLobbyUpdateReceived(handle);
             handles.Remove(key);
             Debug.Log($"[LobbyNotify] RemoveNotifyLobbyUpdateReceived: {callback.Target}-{callback.Method.Name} - {handle}");
         }

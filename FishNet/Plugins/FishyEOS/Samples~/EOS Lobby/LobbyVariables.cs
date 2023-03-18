@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Epic.OnlineServices;
+using Epic.OnlineServices.Lobby;
 using FishNet.Plugins.FishyEOS.Util;
 using TMPro;
 using UnityEngine;
@@ -22,6 +23,7 @@ namespace EOSLobby
         public LobbyData currentLobby;
         public float pollLobbiesInterval = 5f;
         public List<string> lobbyChatMessages = new List<string>();
+        public LobbyDetails[] searchResults;
 
         [Header("Lobby References")]
         public GameObject lobbyBrowserUI;
