@@ -1,8 +1,15 @@
 {
   "name": "com.etdofresh.fishyeos",
   "displayName": "FishNet-FishyEOS",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "unity": "2020.1",
   "description": "FishNet-FishyEOS",
-  "type": "library"
+  "type": "library",
+  "samples": [
+    {
+        "displayName": "EOS Lobby Sample",
+        "description": "Contains a simple lobby sample for EOS using FishNet-FishyEOS",
+        "path": "Samples~/EOS Lobby"
+    }
+  ]
 }
