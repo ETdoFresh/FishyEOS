@@ -1,7 +1,7 @@
 # FishyEOS
 An Epic Online Services (EOS) implementation for Fish-Networking.
 
-Thank you [ETdoFresh](https://github.com/sponsors/etdofresh) for your support.
+Thank [ETdoFresh](https://github.com/sponsors/etdofresh) with your support.
 
 If you have further questions, come find us in the [FirstGearGames Discord](https://discord.gg/Ta9HgDh4Hj)!
 
