@@ -326,7 +326,22 @@ namespace FishNet.Transporting.FishyEOSPlugin
             for (ulong i = 0; i < incomingPacketCount; i++)
                 if (Receive(_localUserId, out var remoteUserId, out var data, out var channel))
                 {
-                    var connectionId = _clients.First(x => x.RemoteUserId == remoteUserId).Id;
+                    int index = 0;
+                    bool hasFoundId = false;
+                    int connectionId = 0;
+                    while (index < _clients.Count && !hasFoundId)
+                    {
+                        if (_clients[index].RemoteUserId == remoteUserId)
+                        {
+                            hasFoundId = true;
+                            connectionId = _clients[index].Id;
+                        }
+                    }
+
+                    if (!hasFoundId) //prevent failures of not getting an id...FishyEOS didn't handle this
+                    {
+                        return;
+                    }
                     _transport.HandleServerReceivedDataArgs(new ServerReceivedDataArgs(data, channel, connectionId,
                         _transport.Index));
                 }
