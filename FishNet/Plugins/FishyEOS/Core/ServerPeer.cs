@@ -336,6 +336,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
                             hasFoundId = true;
                             connectionId = _clients[index].Id;
                         }
+index++;
                     }
 
                     if (!hasFoundId) //prevent failures of not getting an id...FishyEOS didn't handle this
