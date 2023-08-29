@@ -42,7 +42,7 @@ namespace FishNet.Plugins.FishyEOS.Util
             UnityEngine.Object.DontDestroyOnLoad(gameObject);
             _eosManager = gameObject.AddComponent<EOSManager>();
 #if !UNITY_EDITOR && !(UNITY_STANDALONE_WIN)
-            EOSManager.Instance?.Init(_eosManager, EOSManager.ConfigFileName);
+            EOSManager.Instance?.Init(_eosManager, EOSPackageInfo.ConfigFileName);
 #endif
             return PlatformInterface;
         }
@@ -58,7 +58,7 @@ namespace FishNet.Plugins.FishyEOS.Util
             UnityEngine.Object.DontDestroyOnLoad(gameObject);
             _eosManager = gameObject.AddComponent<EOSManager>();
 #if !UNITY_EDITOR && !(UNITY_STANDALONE_WIN)
-            EOSManager.Instance?.Init(_eosManager, EOSManager.ConfigFileName);
+            EOSManager.Instance?.Init(_eosManager, EOSPackageInfo.ConfigFileName);
 #endif
             return _eosManager;
         }

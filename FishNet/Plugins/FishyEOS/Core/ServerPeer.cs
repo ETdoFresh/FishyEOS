@@ -53,7 +53,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
         /// <summary>
         /// EOS Handle for Incoming Peer Disconnections.
         /// </summary>
-        private Dictionary<Connection, ulong> _closePeerConnectionEventHandles = new Dictionary<Connection, ulong>();
+        private Dictionary<string, ulong> _closePeerConnectionEventHandles = new Dictionary<string, ulong>();
 
         /// <summary>
         /// List of connections to this server.
@@ -178,16 +178,39 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 SocketId = clientConnection.SocketId,
                 LocalUserId = clientConnection.LocalUserId,
             };
-            var closePeerConnectionHandle =
+            
+            ulong closePeerConnectionHandle =
                 EOS.GetCachedP2PInterface().AddNotifyPeerConnectionClosed(ref addNotifyPeerConnectionClosedOptions,
                     clientConnection, OnPeerConnectionClosed);
-            _closePeerConnectionEventHandles.Add(clientConnection, closePeerConnectionHandle);
+            
+            string remoteUserId = clientConnection.RemoteUserId.ToString();
+            if (!_closePeerConnectionEventHandles.TryGetValue(remoteUserId, out ulong existingClosePeerConnectionHandle))
+            {
+                _closePeerConnectionEventHandles.Add(remoteUserId, closePeerConnectionHandle);
+            }
+            else
+            {
+                if (closePeerConnectionHandle != existingClosePeerConnectionHandle)
+                {
+                    Debug.LogWarningFormat(
+                        "[ServerPeer.OnPeerConnectionEstablished] Removing existing close peer connection handle for remote user id {0} with handle #{1} and adding new handle #{2}",
+                        remoteUserId, existingClosePeerConnectionHandle, closePeerConnectionHandle);
+
+                    RemoveClosePeerConnectionHandle(remoteUserId, existingClosePeerConnectionHandle);
+                    EOS.GetCachedP2PInterface().RemoveNotifyPeerConnectionClosed(existingClosePeerConnectionHandle);
+                }
+                else
+                {
+                    Debug.LogWarningFormat("[ServerPeer.OnPeerConnectionEstablished] Existing close peer connection handle for remote user id {0} with handle #{1} is the same as the new handle #{2}",
+                        remoteUserId, existingClosePeerConnectionHandle, closePeerConnectionHandle);
+                }
+            }
 
             _transport.HandleRemoteConnectionState(new RemoteConnectionStateArgs(RemoteConnectionState.Started,
                 clientConnection.Id, _transport.Index));
             if (_transport.NetworkManager.CanLog(LoggingType.Common))
                 Debug.Log(
-                    $"[ServerPeer] Established connection from {data.RemoteUserId} with handle #{data.SocketId} and connection id {clientConnection.Id}.");
+                    $"[ServerPeer.OnPeerConnectionEstablished] Established connection from {data.RemoteUserId} with handle #{data.SocketId} and connection id {clientConnection.Id}.");
         }
 
         /// <summary>
@@ -195,20 +218,38 @@ namespace FishNet.Transporting.FishyEOSPlugin
         /// </summary>
         private void OnPeerConnectionClosed(ref OnRemoteConnectionClosedInfo data)
         {
-            var clientConnection = (Connection)data.ClientData;
-            _clients.Remove(clientConnection);
-
-            if (_closePeerConnectionEventHandles.TryGetValue(clientConnection, out var notificationId))
+            Connection? clientConnection = null;
+            for (int i = _clients.Count - 1; i >= 0; i--)
             {
-                EOS.GetCachedP2PInterface().RemoveNotifyPeerConnectionClosed(notificationId);
-                _closePeerConnectionEventHandles.Remove(clientConnection);
+                if(data.RemoteUserId != _clients[i].RemoteUserId)
+                    continue;
+                
+                clientConnection = _clients[i];
+                _clients.Remove(clientConnection.Value);
+            }
+
+            if (!clientConnection.HasValue)
+            {
+                Debug.LogWarningFormat("[ServerPeer.OnPeerConnectionClosed] Failed to find connection for remote user id {0}.", data.RemoteUserId);
+                return;
+            }
+            
+            if (_closePeerConnectionEventHandles.TryGetValue(data.RemoteUserId.ToString(), out ulong notificationId))
+            {
+                RemoveClosePeerConnectionHandle(data.RemoteUserId.ToString(), notificationId);
             }
 
             _transport.HandleRemoteConnectionState(new RemoteConnectionStateArgs(RemoteConnectionState.Stopped,
-                clientConnection.Id, _transport.Index));
+                clientConnection.Value.Id, _transport.Index));
             if (_transport.NetworkManager.CanLog(LoggingType.Common))
                 Debug.Log(
-                    $"[ServerPeer] Closed connection from {data.RemoteUserId} with handle #{data.SocketId} and connection id {clientConnection.Id}.");
+                    $"[ServerPeer.OnPeerConnectionClosed] Closed connection from {data.RemoteUserId} with handle #{data.SocketId} and connection id {clientConnection.Value.Id}.");
+        }
+
+        private void RemoveClosePeerConnectionHandle(string remoteUserId, ulong notificationId)
+        {
+            EOS.GetCachedP2PInterface().RemoveNotifyPeerConnectionClosed(notificationId);
+            _closePeerConnectionEventHandles.Remove(remoteUserId);
         }
 
         /// <summary>
