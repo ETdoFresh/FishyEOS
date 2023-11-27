@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using EOSLobby.EOSCoroutines;
 using Epic.OnlineServices;
@@ -104,7 +104,7 @@ namespace EOSLobby
                     () => CallbackInfo.HasValue, timeout,
                     () => CallbackInfo = new LoginCallbackInfo { ResultCode = Result.TimedOut });
 
-                if (CallbackInfo?.ResultCode != Result.TimedOut) yield break;
+                if (CallbackInfo?.ResultCode == Result.TimedOut) yield break;
                 if (CallbackInfo?.ResultCode != Result.InvalidUser) yield break;
                 if (!automaticallyCreateConnectAccount) yield break;
 
