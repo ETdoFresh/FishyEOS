@@ -63,15 +63,18 @@ namespace FishNet.Transporting.FishyEOSPlugin
         private IEnumerator StartConnectionCoroutine()
         {
             base.SetLocalConnectionState(LocalConnectionState.Starting, false);
-            
-            yield return _transport.AuthConnectData.Connect(out var authDataLogin);
-            if (authDataLogin.loginCallbackInfo?.ResultCode != Result.Success)
+
+            if (_transport.AutoAuthenticate)
             {
-                if (_transport.NetworkManager.CanLog(LoggingType.Error))
-                    Debug.LogError(
-                        $"[ClientPeer] Failed to authenticate with EOS Connect. {authDataLogin.loginCallbackInfo?.ResultCode}");
-                base.SetLocalConnectionState(LocalConnectionState.Stopped, true);
-                yield break;
+                yield return _transport.AuthConnectData.Connect(out var authDataLogin);
+                if (authDataLogin.loginCallbackInfo?.ResultCode != Result.Success)
+                {
+                    if (_transport.NetworkManager.CanLog(LoggingType.Error))
+                        Debug.LogError(
+                            $"[ClientPeer] Failed to authenticate with EOS Connect. {authDataLogin.loginCallbackInfo?.ResultCode}");
+                    base.SetLocalConnectionState(LocalConnectionState.Stopped, true);
+                    yield break;
+                }
             }
 
             if (_transport.NetworkManager.CanLog(LoggingType.Common))
