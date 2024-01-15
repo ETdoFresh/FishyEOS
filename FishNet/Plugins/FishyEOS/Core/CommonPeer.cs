@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Epic.OnlineServices;
 using Epic.OnlineServices.P2P;
-using FishNet.Managing.Logging;
+using FishNet.Managing;
 using FishNet.Plugins.FishyEOS.Util;
 using UnityEngine;
 
@@ -131,9 +131,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
 
             if (getPacketSizeResult != Result.Success)
             {
-                if (_transport.NetworkManager.CanLog(LoggingType.Error))
-                    Debug.LogError(
-                        $"[{nameof(ClientPeer)}] GetNextReceivedPacketSize failed with error: {getPacketSizeResult}");
+                _transport.NetworkManager.LogError($"[{nameof(ClientPeer)}] GetNextReceivedPacketSize failed with error: {getPacketSizeResult}");
                 return false;
             }
 
@@ -148,9 +146,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
             channel = (Channel)channelByte;
             if (receivePacketResult != Result.Success)
             {
-                if (_transport.NetworkManager.CanLog(LoggingType.Error))
-                    Debug.LogError(
-                        $"[{nameof(ClientPeer)}] ReceivePacket failed with error: {receivePacketResult}");
+                _transport.NetworkManager.LogError($"[{nameof(ClientPeer)}] ReceivePacket failed with error: {receivePacketResult}");
                 return false;
             }
 
@@ -167,8 +163,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 EOS.GetCachedP2PInterface().GetPacketQueueInfo(ref getPacketQueueInfoOptions, out var packetQueueInfo);
             if (getPacketQueueResult != Result.Success)
             {
-                if (_transport.NetworkManager.CanLog(LoggingType.Error))
-                    Debug.LogError($"[CommonSocket] Failed to get packet queue info with error {getPacketQueueResult}");
+                _transport.NetworkManager.LogError($"[CommonSocket] Failed to get packet queue info with error {getPacketQueueResult}");
                 return 0;
             }
 

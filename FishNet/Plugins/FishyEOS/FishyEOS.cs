@@ -1,7 +1,6 @@
 ﻿using System;
 using Epic.OnlineServices.P2P;
 using FishNet.Managing;
-using FishNet.Managing.Logging;
 using FishNet.Plugins.FishyEOS.Util;
 using UnityEngine;
 
@@ -407,8 +406,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
         {
             if (_server.GetLocalConnectionState() != LocalConnectionState.Stopped)
             {
-                if (NetworkManager.CanLog(LoggingType.Error))
-                    Debug.LogError("Server is already running.");
+                NetworkManager.LogError("Server is already running.");
                 return false;
             }
 
@@ -449,8 +447,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
             {
                 if (_client.GetLocalConnectionState() != LocalConnectionState.Stopped)
                 {
-                    if (NetworkManager.CanLog(LoggingType.Error))
-                        Debug.LogError("Client is already running.");
+                    NetworkManager.LogError("Client is already running.");
                     return false;
                 }
 
