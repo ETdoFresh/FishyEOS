@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Epic.OnlineServices;
 using Epic.OnlineServices.P2P;
-using FishNet.Managing.Logging;
+using FishNet.Managing;
 using FishNet.Plugins.FishyEOS.Util;
 using UnityEngine;
 
@@ -87,16 +87,13 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 yield return _transport.AuthConnectData.Connect(out var authDataLogin);
                 if (authDataLogin.loginCallbackInfo?.ResultCode != Result.Success)
                 {
-                    if (_transport.NetworkManager.CanLog(LoggingType.Error))
-                        Debug.LogError(
-                            $"[ServerPeer] Failed to authenticate with EOS Connect. {authDataLogin.loginCallbackInfo?.ResultCode}");
+                    _transport.NetworkManager.LogError($"[ServerPeer] Failed to authenticate with EOS Connect. {authDataLogin.loginCallbackInfo?.ResultCode}");
                     base.SetLocalConnectionState(LocalConnectionState.Stopped, true);
                     yield break;
                 }
             }
 
-            if (_transport.NetworkManager.CanLog(LoggingType.Common))
-                Debug.Log($"[ServerPeer] Authenticated with EOS Connect. {EOS.LocalProductUserId}");
+            _transport.NetworkManager.Log($"[ServerPeer] Authenticated with EOS Connect. {EOS.LocalProductUserId}");
 
             // Attempt to Start Listening for Peer Connections...
             try
@@ -111,14 +108,11 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 _acceptPeerConnectionsEventHandle = EOS.GetCachedP2PInterface().AddNotifyPeerConnectionRequest(
                     ref addNotifyPeerConnectionRequestOptions, null, OnPeerConnectionRequest);
 
-                if (_transport.NetworkManager.CanLog(LoggingType.Common))
-                    Debug.Log(
-                        $"[ServerPeer] Started listening for incoming connections. Handle #{_acceptPeerConnectionsEventHandle}");
+                _transport.NetworkManager.Log($"[ServerPeer] Started listening for incoming connections. Handle #{_acceptPeerConnectionsEventHandle}");
             }
             catch (Exception e)
             {
-                if (_transport.NetworkManager.CanLog(LoggingType.Error))
-                    Debug.LogError($"[ServerPeer] Failed to start listening for incoming connections. {e}");
+                _transport.NetworkManager.LogError($"[ServerPeer] Failed to start listening for incoming connections. {e}");
                 base.SetLocalConnectionState(LocalConnectionState.Stopped, true);
                 yield break;
             }
@@ -155,9 +149,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
             if (acceptConnectionResult != Result.Success)
             {
                 _clients.Remove(clientConnection);
-                if (_transport.NetworkManager.CanLog(LoggingType.Error))
-                    Debug.LogError(
-                        $"[ServerPeer] Failed to accept connection from {data.RemoteUserId} with handle #{data.SocketId} and connection id {nextId}. {acceptConnectionResult}");
+                _transport.NetworkManager.LogError($"[ServerPeer] Failed to accept connection from {data.RemoteUserId} with handle #{data.SocketId} and connection id {nextId}. {acceptConnectionResult}");
             }
         }
 
@@ -208,9 +200,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
 
             _transport.HandleRemoteConnectionState(new RemoteConnectionStateArgs(RemoteConnectionState.Started,
                 clientConnection.Id, _transport.Index));
-            if (_transport.NetworkManager.CanLog(LoggingType.Common))
-                Debug.Log(
-                    $"[ServerPeer.OnPeerConnectionEstablished] Established connection from {data.RemoteUserId} with handle #{data.SocketId} and connection id {clientConnection.Id}.");
+            _transport.NetworkManager.Log($"[ServerPeer.OnPeerConnectionEstablished] Established connection from {data.RemoteUserId} with handle #{data.SocketId} and connection id {clientConnection.Id}.");
         }
 
         /// <summary>
@@ -241,9 +231,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
 
             _transport.HandleRemoteConnectionState(new RemoteConnectionStateArgs(RemoteConnectionState.Stopped,
                 clientConnection.Value.Id, _transport.Index));
-            if (_transport.NetworkManager.CanLog(LoggingType.Common))
-                Debug.Log(
-                    $"[ServerPeer.OnPeerConnectionClosed] Closed connection from {data.RemoteUserId} with handle #{data.SocketId} and connection id {clientConnection.Value.Id}.");
+            _transport.NetworkManager.Log($"[ServerPeer.OnPeerConnectionClosed] Closed connection from {data.RemoteUserId} with handle #{data.SocketId} and connection id {clientConnection.Value.Id}.");
         }
 
         private void RemoveClosePeerConnectionHandle(string remoteUserId, ulong notificationId)
@@ -293,8 +281,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
             }
             catch (Exception e)
             {
-                if (_transport.NetworkManager.CanLog(LoggingType.Error))
-                    Debug.LogError($"[ServerPeer] Failed to stop listening for incoming connections. {e}");
+                _transport.NetworkManager.LogError($"[ServerPeer] Failed to stop listening for incoming connections. {e}");
                 base.SetLocalConnectionState(LocalConnectionState.Stopped, true);
                 return false;
             }
@@ -415,20 +402,17 @@ index++;
 
                 if (result == Result.NoConnection || result == Result.InvalidParameters)
                 {
-                    if (_transport.NetworkManager.CanLog(LoggingType.Common))
-                        Debug.Log($"Connection to {connectionId} was lost.");
+                    _transport.NetworkManager.Log($"Connection to {connectionId} was lost.");
                     StopConnection(connectionId);
                 }
                 else if (result != Result.Success)
                 {
-                    if (_transport.NetworkManager.CanLog(LoggingType.Error))
-                        Debug.LogError($"Could not send: {result.ToString()}");
+                    _transport.NetworkManager.LogError($"Could not send: {result}");
                 }
             }
             else
             {
-                if (_transport.NetworkManager.CanLog(LoggingType.Error))
-                    Debug.LogError($"ConnectionId {connectionId} does not exist, data will not be sent.");
+                _transport.NetworkManager.LogError($"ConnectionId {connectionId} does not exist, data will not be sent.");
             }
         }
 

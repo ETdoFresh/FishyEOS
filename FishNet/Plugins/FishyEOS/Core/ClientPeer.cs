@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using Epic.OnlineServices;
 using Epic.OnlineServices.P2P;
-using FishNet.Managing.Logging;
+using FishNet.Managing;
 using FishNet.Plugins.FishyEOS.Util;
 using UnityEngine;
 
@@ -69,17 +69,13 @@ namespace FishNet.Transporting.FishyEOSPlugin
                 yield return _transport.AuthConnectData.Connect(out var authDataLogin);
                 if (authDataLogin.loginCallbackInfo?.ResultCode != Result.Success)
                 {
-                    if (_transport.NetworkManager.CanLog(LoggingType.Error))
-                        Debug.LogError(
-                            $"[ClientPeer] Failed to authenticate with EOS Connect. {authDataLogin.loginCallbackInfo?.ResultCode}");
+                    _transport.NetworkManager.LogError($"[ClientPeer] Failed to authenticate with EOS Connect. {authDataLogin.loginCallbackInfo?.ResultCode}");
                     base.SetLocalConnectionState(LocalConnectionState.Stopped, true);
                     yield break;
                 }
             }
 
-            if (_transport.NetworkManager.CanLog(LoggingType.Common))
-                Debug.Log(
-                    $"[ClientPeer] Authenticated with EOS Connect. {EOS.LocalProductUserId}");
+            _transport.NetworkManager.Log($"[ClientPeer] Authenticated with EOS Connect. {EOS.LocalProductUserId}");
 
             // Attempt to connect to Server Remote User Id P2P connection...
             _localUserId = EOS.LocalProductUserId;
@@ -120,9 +116,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
             if (acceptConnectionResult != Result.Success)
             {
                 base.SetLocalConnectionState(LocalConnectionState.Stopped, false);
-                if (_transport.NetworkManager.CanLog(LoggingType.Error))
-                    Debug.LogError(
-                        $"[{nameof(ClientPeer)}] AcceptConnection failed with error: {acceptConnectionResult}");
+                _transport.NetworkManager.LogError($"[{nameof(ClientPeer)}] AcceptConnection failed with error: {acceptConnectionResult}");
                 StopConnection();
                 yield break;
             }
@@ -153,8 +147,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
 
             if (result == Result.Success) return true;
 
-            if (_transport.NetworkManager.CanLog(LoggingType.Error))
-                Debug.LogWarning($"[ClientPeer] Failed to close connection. Error: {result}");
+            _transport.NetworkManager.LogError($"[ClientPeer] Failed to close connection. Error: {result}");
             return false;
         }
 
@@ -168,8 +161,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
 
             _connectionType = data.ConnectionType.ToString();
             base.SetLocalConnectionState(LocalConnectionState.Started, false);
-            if (_transport.NetworkManager.CanLog(LoggingType.Common))
-                Debug.Log($"[ClientPeer] Connection to server established. ConnectionType: {_connectionType}");
+            _transport.NetworkManager.Log($"[ClientPeer] Connection to server established. ConnectionType: {_connectionType}");
         }
 
         /// <summary>
@@ -183,8 +175,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
             if (_peerConnectionClosedEventHandle.HasValue)
                 EOS.GetCachedP2PInterface().RemoveNotifyPeerConnectionClosed(_peerConnectionClosedEventHandle.Value);
 
-            if (_transport.NetworkManager.CanLog(LoggingType.Common))
-                Debug.Log($"[ClientPeer] Connection to server closed.");
+            _transport.NetworkManager.Log($"[ClientPeer] Connection to server closed.");
             StopConnection();
         }
 
@@ -221,14 +212,12 @@ namespace FishNet.Transporting.FishyEOSPlugin
             var result = Send(_localUserId, _remoteUserId, _socketId, channelId, segment);
             if (result == Result.NoConnection || result == Result.InvalidParameters)
             {
-                if (_transport.NetworkManager.CanLog(LoggingType.Common))
-                    Debug.Log($"[ClientPeer] Connection to server was lost.");
+                _transport.NetworkManager.Log($"[ClientPeer] Connection to server was lost.");
                 StopConnection();
             }
             else if (result != Result.Success)
             {
-                if (_transport.NetworkManager.CanLog(LoggingType.Error))
-                    Debug.LogError($"[ClientPeer] Could not send: {result.ToString()}");
+                _transport.NetworkManager.LogError($"[ClientPeer] Could not send: {result}");
             }
         }
 
@@ -238,8 +227,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
         private void OnQueryNATType(ref OnQueryNATTypeCompleteInfo data)
         {
             _natType = data.NATType.ToString();
-            if (_transport.NetworkManager.CanLog(LoggingType.Common))
-                Debug.Log($"[{nameof(ClientPeer)}] NATType: {_natType}");
+            _transport.NetworkManager.Log($"[{nameof(ClientPeer)}] NATType: {_natType}");
         }
     }
 }
