@@ -301,7 +301,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
 
         public override bool IsLocalTransport(int connectionId)
         {
-            return true;
+            return false;
         }
 
         /// <summary>
