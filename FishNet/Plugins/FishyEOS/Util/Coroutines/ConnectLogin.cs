@@ -26,7 +26,8 @@ namespace FishNet.Plugins.FishyEOS.Util.Coroutines
                     Type = externalCredentialType
                 },
             };
-            if (!string.IsNullOrEmpty(displayName))
+			
+            //if (!string.IsNullOrEmpty(displayName))
                 loginOptions.UserLoginInfo = new UserLoginInfo { DisplayName = displayName };
             
             EOS.GetCachedConnectInterface().Login(ref loginOptions, null,
