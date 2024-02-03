@@ -215,7 +215,6 @@ namespace FishNet.Transporting.FishyEOSPlugin
                     continue;
                 
                 clientConnection = _clients[i];
-                _clients.Remove(clientConnection.Value);
             }
 
             if (!clientConnection.HasValue)
@@ -232,6 +231,8 @@ namespace FishNet.Transporting.FishyEOSPlugin
             _transport.HandleRemoteConnectionState(new RemoteConnectionStateArgs(RemoteConnectionState.Stopped,
                 clientConnection.Value.Id, _transport.Index));
             _transport.NetworkManager.Log($"[ServerPeer.OnPeerConnectionClosed] Closed connection from {data.RemoteUserId} with handle #{data.SocketId} and connection id {clientConnection.Value.Id}.");
+            
+            _clients.Remove(clientConnection.Value);
         }
 
         private void RemoveClosePeerConnectionHandle(string remoteUserId, ulong notificationId)
@@ -478,7 +479,7 @@ index++;
         internal string GetConnectionAddress(int connectionId)
         {
             var client = _clients.FirstOrDefault(x => x.Id == connectionId);
-            return client.LocalUserId.ToString();
+            return client.RemoteUserId.ToString();
         }
     }
 }
