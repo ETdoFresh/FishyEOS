@@ -478,7 +478,7 @@ index++;
         internal string GetConnectionAddress(int connectionId)
         {
             var client = _clients.FirstOrDefault(x => x.Id == connectionId);
-            return client.LocalUserId.ToString();
+            return client.RemoteUserId.ToString();
         }
     }
 }
