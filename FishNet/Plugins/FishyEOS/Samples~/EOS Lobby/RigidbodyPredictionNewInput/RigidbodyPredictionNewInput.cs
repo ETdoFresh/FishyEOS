@@ -1,4 +1,5 @@
 ﻿using FishNet;
+using FishNet.Example.Prediction.Rigidbodies;
 using FishNet.Object;
 using FishNet.Object.Prediction;
 using FishNet.Transporting;
