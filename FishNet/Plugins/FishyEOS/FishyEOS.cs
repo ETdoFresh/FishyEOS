@@ -136,6 +136,8 @@ namespace FishNet.Transporting.FishyEOSPlugin
         /// <returns></returns>
         public override string GetConnectionAddress(int connectionId)
         {
+            if (connectionId == CLIENT_HOST_ID)
+                return LocalProductUserId.ToString();
             return _server.GetConnectionAddress(connectionId);
         }
 
