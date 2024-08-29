@@ -76,16 +76,20 @@ As of **PlayEveryWare/eos_plugin_for_unity@2.1.5**. Android, IOS, and MacOS supp
    1. Other Settings > Identification > Minimum API Level = 23 or higher
    2. Publishing Settings > Uncheck Custom Main Gradle Template
       1. If prompter to update gradeTemplate.properties, click **Yes**.
-2. Do not add **EOSManager** to your scene.
+3. For Android, Here are some more EOS import instructions:
+   1. [Invalid Instruction -> Causing problem with Android Build](https://github.com/ETdoFresh/FishyEOS/issues/26)
+4. Do not add **EOSManager** to your scene.
    1. Instead only rely on FishyEOS provided `EOS.GetManager()` and `EOS.GetPlatformInterface()`.
    2. These functions detect if you are on windows and calls platform specific initialization function.
-3. If you have your EOS configured, you will have a config file located in **Assets/StreamingAssets/EOS/EpicOnlineServicesConfig.json**
+5. If you have your EOS configured, you will have a config file located in **Assets/StreamingAssets/EOS/EpicOnlineServicesConfig.json**
    1. For Android, Duplicate **Assets/StreamingAssets/EOS/**`EpicOnlineServicesConfig.json` to `eos_android_config.json`
    2. For MacOS, Duplicate **Assets/StreamingAssets/EOS/**`EpicOnlineServicesConfig.json` to `eos_macos_config.json`
-4. Android Builds require Android Build Tools 30.0.3. If you are using Unity 2020, you probably will need to update your build tools. (Otherwise, I think you are fine?)
+6. Android Builds require Android Build Tools 30.0.3. If you are using Unity 2020, you probably will need to update your build tools. (Otherwise, I think you are fine?)
    ```shell
    rem Run an administrator privledged command prompt/terminal
    cd \Program Files\Unity\Hub\Editor\2020.3.33f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK\tools\bin
    sdkmanager.bat --install build-tools;30.0.3
    ```
-5. If you are trying to use MacOS preview on M1, here's how I got it to work: https://github.com/PlayEveryWare/eos_plugin_for_unity/issues/141#issuecomment-1285576199 
+7. If you are trying to use MacOS preview on M1, here's how I got it to work:
+   1. https://github.com/PlayEveryWare/eos_plugin_for_unity/issues/141#issuecomment-1285576199
+
