@@ -503,7 +503,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
         /// <returns></returns>
         public override int GetMTU(byte channel)
         {
-            return P2PInterface.MaxPacketSize;
+            return P2PInterface.MAX_PACKET_SIZE;
         }
 
         #endregion
