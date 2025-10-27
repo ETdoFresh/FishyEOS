@@ -503,6 +503,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
         /// <returns></returns>
         public override int GetMTU(byte channel)
         {
+            // Fixed Max Packet Size reference issue
             return P2PInterface.MAX_PACKET_SIZE;
         }
 
