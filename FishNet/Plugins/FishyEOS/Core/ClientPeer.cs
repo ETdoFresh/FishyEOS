@@ -81,12 +81,9 @@ namespace FishNet.Transporting.FishyEOSPlugin
             _localUserId = EOS.LocalProductUserId;
             _remoteUserId = ProductUserId.FromString(_transport.RemoteProductUserId);
             _socketId = new SocketId { SocketName = _transport.SocketName };
-
-            if (_peerConnectionEstablishedEventHandle.HasValue)
-                EOS.GetCachedP2PInterface().RemoveNotifyPeerConnectionEstablished(_peerConnectionEstablishedEventHandle.Value);
-
-            if (_peerConnectionClosedEventHandle.HasValue)
-                EOS.GetCachedP2PInterface().RemoveNotifyPeerConnectionClosed(_peerConnectionClosedEventHandle.Value);
+            
+            RemoveEstablishedNotif();
+            RemoveClosedNotif();            
 
             var addNotifyPeerConnectionEstablishedOptions = new AddNotifyPeerConnectionEstablishedOptions
             {
@@ -125,6 +122,24 @@ namespace FishNet.Transporting.FishyEOSPlugin
             EOS.GetCachedP2PInterface().QueryNATType(ref queryNATTypeOptions, null, OnQueryNATType);
         }
 
+        private void RemoveEstablishedNotif()
+        {
+            if (_peerConnectionEstablishedEventHandle.HasValue)
+            {
+                EOS.GetCachedP2PInterface().RemoveNotifyPeerConnectionEstablished(_peerConnectionEstablishedEventHandle.Value);
+                _peerConnectionEstablishedEventHandle = null;
+            }
+        }
+
+        private void RemoveClosedNotif()
+        {
+            if (_peerConnectionClosedEventHandle.HasValue)
+            {
+                EOS.GetCachedP2PInterface().RemoveNotifyPeerConnectionClosed(_peerConnectionClosedEventHandle.Value);
+                _peerConnectionClosedEventHandle = null;
+            }    
+        }
+
         /// <summary>
         /// Stops the client connection.
         /// </summary>
@@ -156,8 +171,7 @@ namespace FishNet.Transporting.FishyEOSPlugin
         /// </summary>
         private void OnPeerConnectionEstablished(ref OnPeerConnectionEstablishedInfo data)
         {
-            if (_peerConnectionEstablishedEventHandle.HasValue)
-                EOS.GetCachedP2PInterface().RemoveNotifyPeerConnectionEstablished(_peerConnectionEstablishedEventHandle.Value);
+            RemoveEstablishedNotif();
 
             _connectionType = data.ConnectionType.ToString();
             base.SetLocalConnectionState(LocalConnectionState.Started, false);
@@ -169,11 +183,8 @@ namespace FishNet.Transporting.FishyEOSPlugin
         /// </summary>
         private void OnPeerConnectionClosed(ref OnRemoteConnectionClosedInfo data)
         {
-            if (_peerConnectionEstablishedEventHandle.HasValue)
-                EOS.GetCachedP2PInterface().RemoveNotifyPeerConnectionEstablished(_peerConnectionEstablishedEventHandle.Value);
-
-            if (_peerConnectionClosedEventHandle.HasValue)
-                EOS.GetCachedP2PInterface().RemoveNotifyPeerConnectionClosed(_peerConnectionClosedEventHandle.Value);
+            RemoveEstablishedNotif();
+            RemoveClosedNotif();
 
             _transport.NetworkManager.Log($"[ClientPeer] Connection to server closed.");
             StopConnection();
